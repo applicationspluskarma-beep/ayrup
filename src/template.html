@@ -227,6 +227,17 @@ function situationsFor(profile){
     return false;
   });
 }
+/* which situations a particular crew member plays */
+const ROLE_BLOCKS=["finance","ops","comms","content"];
+function sitsFor(profile,me,covered){
+  if(!me) return situationsFor(profile);
+  return situationsFor(profile).filter(s=>{
+    if(s.aud && s.aud.includes("all")) return true;
+    if(s.rb){ const r=s.aud[0]; return r===me.role || (me.pilot && !(covered||[]).includes(r)) }
+    if(me.pilot) return true;
+    return (s.who||[]).includes(me.role);
+  });
+}
 const isLearning = (s,profile) => s.layer==="grant" && (profile==="B"||profile==="V");
 
 /* ---------- storage: local (demo) and remote (Supabase RPC) ---------- */
@@ -257,9 +268,9 @@ const Local = {
     const unlocked = f.closed || Date.now()>f.deadline || done>=f.crewSize;
     return {flight:this._pub(d,f), unlocked, members: unlocked ? ms.filter(m=>m.finished).map(m=>({name:m.name,role:m.role,pilot:m.pilot,answers:m.answers})) : []} },
   async expert(token,id,msg){ const d=this.db(); if(d.leads[token]){d.leads[token].wantsExpert={flight:id,msg,at:Date.now()}; this.save(d)} return true },
-  async demoCrew(id){ const d=this.db(); const f=d.flights[id]; const sits=situationsFor(f.profile);
+  async demoCrew(id){ const d=this.db(); const f=d.flights[id];
     const people=[["Олена","finance",.75],["Максим","ops",.45],["Ірина","comms",.6]].slice(0,Math.max(1,f.crewSize-1));
-    for(const [name,role,skill] of people){ const mt=uid(); const answers={};
+    for(const [name,role,skill] of people){ const mt=uid(); const answers={}; const sits=sitsFor(f.profile,{role,pilot:false});
       for(const s of sits){ const r=Math.random(); let idx;
         if(r<.12){ answers[s.id]={o:-1,ask:pick(["role:finance","giver","expert","none"])}; continue }
         const good=s.options.findIndex(o=>o.s==="g"), mid=s.options.findIndex(o=>o.s==="a"), bad=s.options.findIndex(o=>o.s==="c");
@@ -459,7 +470,7 @@ routes.new = app => {
     if(!st.orgtype) return err.textContent="Оберіть, хто запускає проєкт.";
     if(!st.profile) return err.textContent="Оберіть спосіб фінансування.";
     $("#go").disabled=true;
-    try{ const r=await API.createFlight(s.pilot.token,st); const ss=session.get(); ss.members[r.flightId]=r.memberToken; session.set(ss); go("flight-"+r.flightId) }
+    try{ const r=await API.createFlight(s.pilot.token,st); const ss=session.get(); ss.members[r.flightId]=r.memberToken; ss.roles=ss.roles||{}; ss.roles[r.flightId]={role:st.pilotRole,pilot:true}; session.set(ss); go("flight-"+r.flightId) }
     catch(x){ err.textContent=x.message; $("#go").disabled=false } } };
 
 routes.flight = async (app,id) => {
@@ -470,7 +481,7 @@ routes.flight = async (app,id) => {
   app.innerHTML = `<div class="wrap"><p class="small muted"><button class="linkbtn" data-go="cabinet">Мої рейси</button></p>
   <h2>${esc(f.project)}</h2><p class="muted">${esc(PROF[f.profile]?.name)} · ${esc(ORG[f.orgtype]?.name||"")}</p>
   <div class="stack">
-   <div class="panel"><h3>Ваш політ</h3>${myDone?`<p>Ви завершили свій політ. Дякуємо!</p>`:`<p>Пройдіть гру самі. Займе ${Math.round(situationsFor(f.profile).length*0.6)}–${situationsFor(f.profile).length} хвилин.</p><button class="btn" data-go="play-${esc(id)}">Почати свій політ</button>`}</div>
+   <div class="panel"><h3>Ваш політ</h3>${myDone?`<p>Ви завершили свій політ. Дякуємо!</p>`:`<p>Пройдіть гру самі. Як керівник проєкту ви бачите ситуації з усіх систем, тож це займе 25–45 хвилин.</p><button class="btn" data-go="play-${esc(id)}">Почати свій політ</button>`}</div>
    <div class="panel"><h3>Запросіть екіпаж</h3><p class="small muted">Надішліть це посилання людям, які реалізовуватимуть проєкт. Кожен обере свою роль і пройде гру окремо.</p>
     <div class="copy"><input type="text" readonly value="${esc(shareLink(id))}" id="link" aria-label="Посилання для екіпажу"><button class="btn small" id="cp">Копіювати</button></div></div>
    <div class="panel"><h3>Екіпаж: завершили ${done} з ${f.crewSize}</h3>
@@ -508,18 +519,24 @@ routes.join = async (app,id) => {
     if(!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(p.email)) return err.textContent="Вкажіть пошту у форматі name@example.com.";
     if(!p.role) return err.textContent="Оберіть свою роль.";
     if(!p.consent) return err.textContent="Без згоди ми не можемо зберегти ваші відповіді.";
-    try{ const r=await API.join(id,p); const ss=session.get(); ss.members[id]=r.memberToken; ss.crewName=p.name; session.set(ss); go("play-"+id) }catch(x){ err.textContent=x.message } }) };
+    try{ const r=await API.join(id,p); const ss=session.get(); ss.members[id]=r.memberToken; ss.crewName=p.name; ss.roles=ss.roles||{}; ss.roles[id]={role:p.role,pilot:false}; session.set(ss); go("play-"+id) }catch(x){ err.textContent=x.message } }) };
 
 routes.play = async (app,id) => {
   const s=session.get(); const mt=s.members[id]; if(!mt){ go("join-"+id); return }
   if((s.done||{})[id]){ go("results-"+id); return }
-  const f=await API.flight(id); const sits=situationsFor(f.profile);
+  const f=await API.flight(id);
+  const me=(s.roles||{})[id] || (s.pilot ? {role:"pilot",pilot:true} : null);
   const draft = s.drafts[id] || {i:-1,answers:{}};
+  let sits=sitsFor(f.profile,me,draft.covered);
   const save=()=>{ const ss=session.get(); ss.drafts[id]=draft; session.set(ss) };
     const roleOptions = DATA.roles.filter(r=>r.id!=="other");
   function intro(){
+    const pilotPick = me&&me.pilot&&draft.i<0;
+    const others = ROLE_BLOCKS.filter(r=>r!==me?.role);
     app.innerHTML = `<div class="wrap"><div style="margin-bottom:16px">${lights()}</div><h2>Передпольотний інструктаж</h2>
-     <div class="stack"><p>Попереду ${sits.length} ситуацій вашого проєкту «${esc(f.project)}». Кожна — це рішення, яке колись доведеться ухвалити.</p>
+     <div class="stack">${pilotPick?`<div><p><b>Хто ще є у вашій команді?</b> Позначте ролі, за які відповідають інші люди. Ситуації ролей, яких у команді немає, пройдете ви: так ми побачимо, які зони зараз тримаються на керівникові.</p>
+      <div class="asks" id="cov">${others.map(r=>`<button type="button" class="chip" data-r="${r}" aria-pressed="false">${esc(ROLE[r].name)}</button>`).join("")}</div></div>`:""}
+     <p id="count">Попереду ${sits.length} ${plural(sits.length,"ситуація","ситуації","ситуацій")} вашого проєкту «${esc(f.project)}». Кожна — це рішення, яке колись доведеться ухвалити.</p>
      <p>Обирайте те, що зробили б насправді, а не те, що «правильно». Якщо не знаєте — так і скажіть: чесна прогалина корисніша за вгадану відповідь.</p>
      <div class="rules"><p><b>Правила польоту</b></p><ul class="plain">
       <li>Під час гри ми не показуємо, правильна відповідь чи ні. Повний розбір буде у звіті після польоту.</li>
@@ -528,6 +545,11 @@ routes.play = async (app,id) => {
      </ul></div>
      <p>Прогрес зберігається, тож можна зробити перерву.</p>
      <button class="btn" id="start">${draft.i>=0?"Продовжити":"Злітаємо"}</button></div></div>`;
+    if(pilotPick){ draft.covered=[]; sits=sitsFor(f.profile,me,draft.covered);
+      $("#count").textContent=`Попереду ${sits.length} ${plural(sits.length,"ситуація","ситуації","ситуацій")} вашого проєкту «${f.project}». Кожна — це рішення, яке колись доведеться ухвалити.`;
+      app.querySelectorAll("#cov .chip").forEach(c=>c.onclick=()=>{ const on=c.getAttribute("aria-pressed")!=="true"; c.setAttribute("aria-pressed",on); const r=c.dataset.r;
+        draft.covered = on ? [...new Set([...draft.covered,r])] : draft.covered.filter(x=>x!==r); sits=sitsFor(f.profile,me,draft.covered);
+        $("#count").textContent=`Попереду ${sits.length} ${plural(sits.length,"ситуація","ситуації","ситуацій")} вашого проєкту «${f.project}». Кожна — це рішення, яке колись доведеться ухвалити.` }) }
     $("#start").onclick=()=>{ if(draft.i<0) draft.i=0; save(); step() } }
   function step(){
     const s=sits[draft.i]; const a=draft.answers[s.id]||null;
@@ -573,11 +595,14 @@ function analyse(flight,members){
   const sysCover={}; DATA.systems.forEach(sy=>{ sysCover[sy.id]=memberSys.filter(o=>o[sy.id]!=null&&o[sy.id]>=.75).length });
   const rolesPresent=new Set(members.map(m=>m.role));
   const missingRoles=[...new Set(DATA.systems.flatMap(sy=>sy.owners))].filter(r=>!rolesPresent.has(r));
+  const pilotM=members.find(m=>m.pilot);
+  const carried=missingRoles.filter(r=>DATA.situations.some(s=>s.rb&&s.aud[0]===r&&pilotM?.answers?.[s.id]));
+  const orphan=missingRoles.filter(r=>!carried.includes(r));
   // asks
   const asks={}; members.forEach(m=>Object.values(m.answers||{}).forEach(a=>{ if(a.o===-1&&a.ask) asks[a.ask]=(asks[a.ask]||0)+1 }));
   const disagreements = per.filter(p=>p.agree!=null&&p.agree<.67).sort((a,b)=>a.agree-b.agree);
   const weak = per.filter(p=>p.sc!=null&&p.sc<.5).sort((a,b)=>a.sc-b.sc);
-  return {per,sysScore,coverage,alignment,readiness,grant,memberSys,sysCover,missingRoles,asks,disagreements,weak,status};
+  return {per,sysScore,coverage,alignment,readiness,grant,memberSys,sysCover,missingRoles,carried,orphan,asks,disagreements,weak,status};
 }
 function fundingRoute(flight,R,members){
   const prof=flight.profile, org=flight.orgtype||"ngo";
@@ -643,7 +668,8 @@ routes.results = async (app,id) => {
    </div>
    <section class="section"><h2>Панель приладів</h2><div class="gauges">${sysOrder.map(sy=>gauge(sy.name,R.sysScore[sy.id])).join("")}</div></section>
    <section class="section"><h2>Що підсвітив ліхтарик</h2>
-    ${R.missingRoles.length?`<div class="gap"><span class="bar" style="background:var(--coral)"></span><div><b>Ролі, яких немає в екіпажі:</b> ${R.missingRoles.map(r=>esc(roleName(r))).join(", ")}. Саме ці люди мають відповідати за частину систем.</div></div>`:""}
+    ${R.carried.length?`<div class="gap"><span class="bar" style="background:var(--amber)"></span><div><b>Ролі, які закриває керівник:</b> ${R.carried.map(r=>esc(roleName(r))).join(", ")}. Окремої людини на них немає, тож їхні ситуації пройшов керівник проєкту. Варто знайти людину або свідомо залишити ці зони за собою.</div></div>`:""}
+    ${R.orphan.length?`<div class="gap"><span class="bar" style="background:var(--coral)"></span><div><b>Ролі без відповідей:</b> ${R.orphan.map(r=>esc(roleName(r))).join(", ")}. Людина з цією роллю не пройшла гру, тож ці зони проєкту залишилися неперевіреними.</div></div>`:""}
     ${R.weak.length?`<p>${R.weak.length} ${plural(R.weak.length,"ситуація","ситуації","ситуацій")} з помітними прогалинами. Подробиці — у розборі польоту нижче.</p>`:`<p class="muted">Критичних прогалин немає.</p>`}
     ${askLines?`<h3 style="margin-top:24px">Чесні «не знаю»</h3><ul>${askLines}</ul>`:""}
    </section>
