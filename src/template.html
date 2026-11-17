@@ -136,6 +136,52 @@ table.map td .cell{display:inline-block;width:16px;height:16px;border-radius:50%
 .reveal{animation:rise .7s cubic-bezier(.2,.7,.2,1) both}
 @keyframes rise{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
 @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+/* landing */
+.land .hero{padding-top:40px;padding-bottom:56px}
+.land h1{max-width:14em}
+.takeoff{max-width:620px;margin-top:6px}
+.cta-row{display:flex;gap:12px;flex-wrap:wrap}
+.band{background:var(--sunken);padding:8px 0}
+.band .wrap{padding-top:48px;padding-bottom:48px}
+.two{display:grid;grid-template-columns:minmax(0,5fr) minmax(0,7fr);gap:40px;align-items:start}
+@media (max-width:760px){.two{grid-template-columns:1fr;gap:12px}}
+.two p{max-width:38em}
+.aud{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:28px;margin:8px 0 20px}
+.aud h3{margin-bottom:6px}.aud p{margin:0;color:var(--muted)}
+.out{display:grid;grid-template-columns:minmax(0,6fr) minmax(0,5fr);gap:40px;align-items:start}
+@media (max-width:860px){.out{grid-template-columns:1fr}}
+.out-list>div{padding:14px 0;border-bottom:1px solid var(--line)}
+.out-list>div:first-child{padding-top:0}
+.out-list b{font-family:var(--display);font-weight:600;font-size:20px;display:block;margin-bottom:2px}
+.out-list p{margin:0;color:var(--muted)}
+.preview{margin:0;background:var(--raised);border:1px solid var(--line);border-radius:var(--r-md);padding:22px}
+.preview-top{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:16px}
+.bignum.sm{font-size:64px}
+.gauges.g2{grid-template-columns:repeat(2,1fr)}
+ol.steps{list-style:none;padding:0;counter-reset:st}
+ol.steps li{counter-increment:st;border-top:3px solid var(--line);padding-top:14px}
+ol.steps li::before{content:counter(st);font-family:var(--display);font-weight:700;color:var(--muted);font-size:15px;display:block}
+ol.steps li:nth-child(1){border-color:var(--coral)}ol.steps li:nth-child(2),ol.steps li:nth-child(3){border-color:var(--amber)}ol.steps li:nth-child(4){border-color:var(--green)}
+.systems li{display:flex;flex-direction:column;border-radius:var(--r-sm);padding:10px 14px}
+.systems li span{font-weight:400;color:var(--muted);font-size:13px}
+.mission blockquote{font-family:var(--display);font-weight:600;font-size:clamp(26px,4vw,40px);line-height:1.2;margin:0 0 20px;max-width:22em}
+.mission .m-label{font-weight:800;color:var(--muted);margin-bottom:12px}
+.mission .vision{font-size:18px;max-width:38em}
+ul.plain{margin:0;padding-left:1.1em}ul.plain li+li{margin-top:8px}
+.final{text-align:left;padding-top:24px}
+.final h2{max-width:18em}
+.rules{background:var(--raised);border:1px solid var(--line);border-left:6px solid var(--amber);border-radius:var(--r-md);padding:18px 20px}
+.rules p{margin-bottom:8px}
+.navrow.end{justify-content:flex-end}
+/* debrief */
+.db{padding:20px 0;border-bottom:1px solid var(--line)}
+.db-head{display:flex;gap:14px}.db-head .bar{flex:0 0 6px;border-radius:3px}
+.db-head h3{margin:0}.db-head p{margin:2px 0 0}
+.db-text{margin:12px 0 10px}
+.whos{display:flex;flex-wrap:wrap;gap:8px 14px;margin-bottom:12px;font-size:14px}
+.who{display:inline-flex;align-items:center;gap:6px}
+details.more summary{cursor:pointer;font-weight:800;color:var(--green-ink);padding:16px 0}
+table.map.left td,table.map.left th{text-align:left}
 .sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
 </style>
 </head>
@@ -218,11 +264,13 @@ const Local = {
         if(r<.12){ answers[s.id]={o:-1,ask:pick(["role:finance","giver","expert","none"])}; continue }
         const good=s.options.findIndex(o=>o.s==="g"), mid=s.options.findIndex(o=>o.s==="a"), bad=s.options.findIndex(o=>o.s==="c");
         idx = r<skill ? good : (r<skill+.2 && mid>=0 ? mid : (bad>=0?bad:good));
-        answers[s.id]={o:idx} }
+        answers[s.id]={o:idx}; if(Math.random()<.08){ const alt=s.options.findIndex(o=>o.s==="g"); if(alt!==idx) answers[s.id].ch=[alt] } }
       d.members[mt]={token:mt,flight:id,name,role,pilot:false,answers,finished:Date.now(),lead:null} }
     this.save(d); return true }
 };
 function pick(a){return a[Math.floor(Math.random()*a.length)]}
+const plural=(n,a,b,c)=>{ const m=n%10,h=n%100; return m===1&&h!==11?a:(m>=2&&m<=4&&(h<12||h>14))?b:c };
+const cur = a => a && a.ch && a.ch.length ? a.ch[a.ch.length-1] : a ? a.o : null;
 const Remote = {
   async rpc(fn,args){ const r=await fetch(CFG.supabaseUrl.replace(/\/$/,"")+"/rest/v1/rpc/"+fn,{method:"POST",headers:Object.assign({"Content-Type":"application/json",apikey:CFG.supabaseAnonKey}, CFG.supabaseAnonKey.startsWith("eyJ")?{Authorization:"Bearer "+CFG.supabaseAnonKey}:{}),body:JSON.stringify(args)});
     const t=await r.text(); let j=null; try{j=t?JSON.parse(t):null}catch(e){}
@@ -252,7 +300,8 @@ async function render(){
 }
 document.addEventListener("click",e=>{ const g=e.target.closest("[data-go]"); if(g){ e.preventDefault(); go(g.dataset.go) } });
 window.addEventListener("hashchange",render);
-function renderNav(){ const s=session.get(); $("#nav").innerHTML = s.pilot ? `<button class="btn ghost small" data-go="cabinet">Мої рейси</button>` : `<button class="btn ghost small" data-go="register">Почати як пілот</button>` }
+function renderNav(){ const s=session.get(); const r=current().name;
+  $("#nav").innerHTML = s.pilot ? `<button class="btn ghost small" data-go="cabinet">Мої рейси</button>` : (r==="start" ? `<button class="btn ghost small" data-go="register">Запустити рейс</button>` : "") }
 $("#banner").innerHTML = REMOTE ? "" : `<div class="banner">Демо-режим: дані зберігаються лише в цьому браузері. Щоб протестувати з екіпажем на різних пристроях, підключіть базу даних (див. README).</div>`;
 
 /* ---------- pieces ---------- */
@@ -269,27 +318,94 @@ function shareLink(id){ return location.href.split("#")[0]+"#join-"+id }
 
 /* ---------- screens ---------- */
 routes.start = app => {
-  app.innerHTML = `<div class="wrap wide">
-  <section class="hero">
+  const sample={route:.82,crew:.6,fuel:.38,engines:.71};
+  app.innerHTML = `<div class="land">
+  <section class="hero wrap wide">
     <div>${lights()}</div>
-    <h1>Проживіть свій проєкт до того, як витратите перший євро</h1>
-    <p class="lead">ayrup — гра-симулятор для НГО, ініціатив і малого бізнесу. Кожен у команді окремо проходить реальні ситуації проєкту, а наприкінці ви бачите, наскільки готові до зльоту і чого саме бракує.</p>
-    <div style="max-width:560px" class="reveal">${runway(.7)}<p class="small muted" style="margin-top:10px">Так виглядає результат: готовність 70% і чесний список того, що закриває решту.</p></div>
-    <div><button class="btn" data-go="register">Почати як пілот</button></div>
+    <h1>Перевірте, чи готовий ваш проєкт до зльоту</h1>
+    <p class="lead">Проживіть свій проєкт у симуляторі, перш ніж витратити перший євро. ayrup — гра для команд НГО, ініціатив і малого бізнесу: кожен окремо проходить реальні ситуації проєкту, а ви бачите, чи готова команда його реалізувати і чого саме бракує.</p>
+    <div class="takeoff" aria-hidden="true">${runway(.7)}</div>
+    <div class="cta-row"><button class="btn" data-go="register">Запустити рейс</button><button class="btn ghost" id="how">Як це працює</button></div>
+    <p class="small muted">Безкоштовно. Кожен учасник витрачає 20–30 хвилин. Команда до 8 людей.</p>
   </section>
-  <div class="steps">
-    <div><span class="n">1</span><b>Запустіть рейс</b>Опишіть проєкт і як плануєте його фінансувати: грантом, власним коштом чи ще не знаєте.</div>
-    <div><span class="n">2</span><b>Запросіть екіпаж</b>Надішліть посилання людям, які реалізовуватимуть проєкт. Кожен грає сам, у зручний час, протягом 24–48 годин.</div>
-    <div><span class="n">3</span><b>Отримайте результат</b>Відсоток готовності, узгодженість команди, карта компетенцій і рекомендований маршрут фінансування.</div>
-  </div>
-  <h3>Вісім систем, які перевіряємо перед вильотом</h3>
-  <ul class="systems">${DATA.systems.map(s=>`<li title="${esc(s.desc)}">${esc(s.name)}</li>`).join("")}</ul>
-  <footer>Методологія спирається на наукові дослідження, відкриті рамки оцінки та німецьке грантове право. Результат гри — орієнтир для команди, а не юридична чи фінансова консультація.</footer>
-  </div>` };
+
+  <section class="band"><div class="wrap wide two">
+    <h2>Гроші є. Результату — немає.</h2>
+    <div class="stack">
+      <p>Організації отримують гранти, а потім не можуть їх використати чи відзвітувати і повертають кошти. Бізнес бере кредит під ідею, яку команда бачить кожен по-своєму. Причина рідко в ідеї. Частіше команда не знає правил, не поділила відповідальність або вперше стикається з ситуаціями, які можна було передбачити.</p>
+      <p>Інструментів, щоб написати заявку, вистачає. Інструментів, щоб перевірити, чи команда здатна проєкт реалізувати, майже немає. ayrup закриває саме цю прогалину.</p>
+    </div>
+  </div></section>
+
+  <section class="wrap wide section">
+    <h2>Для кого</h2>
+    <div class="aud">
+      <div><h3>Неприбуткові організації</h3><p>e.V., gGmbH і фонди, які отримали грант або готують заявку і хочуть упевнитися, що впораються з реалізацією та звітністю.</p></div>
+      <div><h3>Ініціативи</h3><p>Групи людей з ідеєю, які ще не знають, чи потрібні їм зовнішні гроші і з чого почати.</p></div>
+      <div><h3>Малий і середній бізнес</h3><p>Стартапи та компанії, які запускають новий напрям за гроші програм підтримки, кредит чи власним коштом.</p></div>
+    </div>
+    <p class="muted">Гра підлаштовується під вашу ситуацію: грант уже є, подаєтесь, ще не знаєте або рухаєтесь власним коштом.</p>
+  </section>
+
+  <section class="wrap wide section">
+    <h2>Що команда отримає на виході</h2>
+    <div class="out">
+      <div class="out-list">
+        <div><b>Рівень готовності</b><p>Відсоток, який показує, наскільки команда готова до ситуацій, що чекають на проєкт. Це орієнтир, а не прогноз успіху.</p></div>
+        <div><b>Узгодженість команди</b><p>Чи однаково люди бачать ключові рішення. Розбіжність — ризик, навіть коли кожен окремо знає відповідь.</p></div>
+        <div><b>Карта компетенцій</b><p>Хто що закриває, де роль тримається на одній людині і де її немає зовсім.</p></div>
+        <div><b>Розбір польоту</b><p>Що пішло не так, чому це важливо і як діяти краще, з опорою на правила програм і досвід реалізації.</p></div>
+        <div><b>Маршрут фінансування</b><p>Грант, кредит, власні кошти чи спершу пробний запуск — що підходить саме вашому проєкту зараз.</p></div>
+      </div>
+      <figure class="preview" aria-label="Приклад панелі приладів">
+        <div class="preview-top"><span class="bignum sm">64%</span><span class="muted small">Приклад звіту</span></div>
+        <div class="gauges g2">${DATA.systems.filter(s=>s.id in sample).map(s=>gauge(s.name,sample[s.id])).join("")}</div>
+      </figure>
+    </div>
+  </section>
+
+  <section class="wrap wide section" id="mechanics">
+    <h2>Як це працює</h2>
+    <ol class="steps">
+      <li><b>Запустіть рейс</b>Керівник проєкту, у грі — пілот, описує проєкт і як планує його фінансувати.</li>
+      <li><b>Запросіть команду</b>Надішліть посилання людям, які реалізовуватимуть проєкт. Кожен обирає свою роль: фінанси, комунікації, операційна діяльність чи програма.</li>
+      <li><b>Кожен грає окремо</b>У зручний час, протягом 24–48 годин. Відповіді приховані до кінця, підказок під час гри немає, зараховується перша відповідь.</li>
+      <li><b>Отримайте розбір</b>Коли пройдуть усі, відкриється звіт: готовність, узгодженість, прогалини й наступні кроки.</li>
+    </ol>
+    <h3>Вісім систем проєкту, які перевіряємо</h3>
+    <ul class="systems">${DATA.systems.map(s=>`<li><b>${esc(s.name)}</b><span>${esc(s.desc)}</span></li>`).join("")}</ul>
+  </section>
+
+  <section class="band mission"><div class="wrap wide">
+    <p class="m-label">Навіщо ми це робимо</p>
+    <blockquote>Ми допомагаємо грошам, які дають на покращення світу, працювати, а не лежати в коробці.</blockquote>
+    <p class="vision">Ми бачимо світ, у якому кожна гривня, євро чи долар, виділені на добру справу, доходять до результату, а не повертаються назад. Коли проєкт провалюється через непідготовленість, втрачають усі: команда, грантодавець і люди, яким мала допомогти ця справа.</p>
+  </div></section>
+
+  <section class="wrap wide section two">
+    <h2>На чому стоїть методологія</h2>
+    <div class="stack">
+      <p>Гра спирається на наукові дослідження, відкриті рамки оцінки організаційної спроможності та німецьке грантове право.</p>
+      <ul class="plain">
+        <li>Дослідження командного мислення: спільне розуміння задачі пов'язане з кращими результатами команд.</li>
+        <li>Дослідження мудрості натовпу: незалежні оцінки точніші, ніж ті, що зроблені під впливом інших. Тому кожен грає окремо.</li>
+        <li>Метааналізи симуляцій у навчанні: досвід, прожитий у безпечному середовищі, краще запам'ятовується.</li>
+        <li>Правила використання грантів у Німеччині: ANBest-P, звіт про використання коштів, заборона передчасного старту, правила закупівель.</li>
+      </ul>
+      <p class="small muted">Результат гри — орієнтир для команди, а не юридична чи фінансова консультація.</p>
+    </div>
+  </section>
+
+  <section class="wrap wide final">
+    <h2>Перевірте проєкт до того, як він злетить по-справжньому</h2>
+    <button class="btn" data-go="register">Запустити рейс</button>
+  </section>
+  </div>`;
+  $("#how").onclick=()=>$("#mechanics").scrollIntoView({behavior:matchMedia("(prefers-reduced-motion: reduce)").matches?"auto":"smooth"}) };
 
 routes.register = app => {
   const s=session.get(); if(s.pilot){ go("cabinet"); return }
-  app.innerHTML = `<div class="wrap"><h2>Реєстрація пілота</h2><p class="muted">Пілот — людина, яка запускає рейс і запрошує команду. Зазвичай це засновник, керівник або координатор проєкту.</p>
+  app.innerHTML = `<div class="wrap"><h2>Запуск рейсу</h2><p class="muted">У грі людину, яка запускає рейс і запрошує команду, називаємо пілотом. Зазвичай це керівник проєкту, засновник або CEO.</p>
   <form class="panel stack" id="f" novalidate>
     <label class="field">Ім'я<input type="text" name="name" autocomplete="name" required></label>
     <label class="field">Електронна пошта<input type="email" name="email" autocomplete="email" required></label>
@@ -358,7 +474,7 @@ routes.flight = async (app,id) => {
    <div class="panel"><h3>Запросіть екіпаж</h3><p class="small muted">Надішліть це посилання людям, які реалізовуватимуть проєкт. Кожен обере свою роль і пройде гру окремо.</p>
     <div class="copy"><input type="text" readonly value="${esc(shareLink(id))}" id="link" aria-label="Посилання для екіпажу"><button class="btn small" id="cp">Копіювати</button></div></div>
    <div class="panel"><h3>Екіпаж: завершили ${done} з ${f.crewSize}</h3>
-    <ul class="crew">${f.members.map(m=>`<li><span>${esc(m.name)}${m.pilot?" (пілот)":""} <span class="muted small">· ${esc(ROLE[m.role]?.name||m.role)}</span></span><span class="tag ${m.finished?"g":"n"}">${m.finished?"Завершено":"Ще в польоті"}</span></li>`).join("")}</ul>
+    <ul class="crew">${f.members.map(m=>`<li><span>${esc(m.name)}${m.pilot?" (керівник, пілот)":""} <span class="muted small">· ${esc(ROLE[m.role]?.name||m.role)}</span></span><span class="tag ${m.finished?"g":"n"}">${m.finished?"Завершено":"Ще в польоті"}</span></li>`).join("")}</ul>
     <p class="small muted" style="margin-top:12px">${f.closed||left===0?"Рейс завершено.":"До кінця вікна: "+Math.ceil(left/3600e3)+" год. Результати відкриються, коли завершать усі або сплине час."}</p>
     <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:12px">
      <button class="btn ghost small" data-go="results-${esc(id)}">Результати</button>
@@ -375,14 +491,15 @@ routes.join = async (app,id) => {
   if(s.members[id]){ go("play-"+id); return }
   let role=null;
   app.innerHTML = `<div class="wrap"><div style="margin-bottom:18px">${lights()}</div><h2>${esc(f.pilotName)} запрошує вас у рейс «${esc(f.project)}»</h2>
-  <p>ayrup — гра, у якій команда наперед проживає свій проєкт. Ви пройдете реальні ситуації й оберете, як би діяли. Відповідайте самостійно й чесно: правильні відповіді ви побачите разом з усією командою наприкінці.</p>
+  <p>${esc(f.pilotName)} — керівник проєкту. У грі цю роль називаємо «пілот». ayrup — гра, у якій команда наперед проживає свій проєкт: ви пройдете реальні ситуації й оберете, як би діяли.</p>
+  <p class="muted">Відповідайте самостійно й чесно. Ваших відповідей ніхто не побачить, доки гру не завершить уся команда. Розбір усіх ситуацій буде у спільному звіті.</p>
   <form class="panel stack" id="f" novalidate>
    <label class="field">Ім'я<input type="text" name="name" autocomplete="name"></label>
    <label class="field">Електронна пошта<input type="email" name="email" autocomplete="email"></label>
    <div><b>Ваша роль у проєкті</b><div class="choices grid2" id="role" style="margin-top:8px">${DATA.roles.filter(r=>r.id!=="pilot").map(r=>choiceBtn(r.id,r.name,r.desc)).join("")}</div></div>
    <label class="check"><input type="checkbox" name="consent"> <span>${consentText}</span></label>
    <p class="err" id="err" aria-live="polite"></p>
-   <button class="btn" type="submit">Приєднатися до рейсу</button>
+   <button class="btn" type="submit">Почати свій політ</button>
   </form></div>`;
   bindChoices($("#role"),v=>role=v);
   $("#f").addEventListener("submit",async e=>{ e.preventDefault(); const fd=new FormData(e.target); const err=$("#err");
@@ -399,42 +516,43 @@ routes.play = async (app,id) => {
   const f=await API.flight(id); const sits=situationsFor(f.profile);
   const draft = s.drafts[id] || {i:-1,answers:{}};
   const save=()=>{ const ss=session.get(); ss.drafts[id]=draft; session.set(ss) };
-  const learning = f.profile==="B"||f.profile==="V";
-  const roleOptions = DATA.roles.filter(r=>r.id!=="other");
+    const roleOptions = DATA.roles.filter(r=>r.id!=="other");
   function intro(){
     app.innerHTML = `<div class="wrap"><div style="margin-bottom:16px">${lights()}</div><h2>Передпольотний інструктаж</h2>
      <div class="stack"><p>Попереду ${sits.length} ситуацій вашого проєкту «${esc(f.project)}». Кожна — це рішення, яке колись доведеться ухвалити.</p>
      <p>Обирайте те, що зробили б насправді, а не те, що «правильно». Якщо не знаєте — так і скажіть: чесна прогалина корисніша за вгадану відповідь.</p>
-     ${learning?`<p>Частину ситуацій про грантові правила ви проходите в навчальному режимі: одразу після відповіді побачите, що вимагає правило. Ці відповіді не знижують загальної готовності проєкту.</p>`:""}
+     <div class="rules"><p><b>Правила польоту</b></p><ul class="plain">
+      <li>Під час гри ми не показуємо, правильна відповідь чи ні. Повний розбір буде у звіті після польоту.</li>
+      <li>Зараховується ваша перша відповідь. Якщо натиснули помилково, можна змінити, але зміну буде видно у звіті.</li>
+      <li>Повернутися до попередньої ситуації не можна.</li>
+     </ul></div>
      <p>Прогрес зберігається, тож можна зробити перерву.</p>
      <button class="btn" id="start">${draft.i>=0?"Продовжити":"Злітаємо"}</button></div></div>`;
     $("#start").onclick=()=>{ if(draft.i<0) draft.i=0; save(); step() } }
   function step(){
-    const s=sits[draft.i]; const a=draft.answers[s.id]||null; const learn=isLearning(s,f.profile);
+    const s=sits[draft.i]; const a=draft.answers[s.id]||null;
     const done=Object.keys(draft.answers).length;
     app.innerHTML = `<div class="wrap"><div class="playhead"><div class="playmeta"><span class="sysname">${esc(SYS[s.sys].name)}</span><span>${draft.i+1} з ${sits.length}</span></div>${runway(done/sits.length)}</div>
-     <section class="sit"><h2>${esc(s.title)}</h2>${learn?`<p><span class="tag a">Навчальний режим</span></p>`:""}<p class="text">${esc(s.text)}</p>
-      <div class="choices" id="ch">${s.options.map((o,k)=>choiceBtn(k,o.t,"",a&&a.o===k)).join("")}
-       <button type="button" class="choice dunno" data-v="-1" aria-pressed="${a&&a.o===-1?"true":"false"}"><span class="dot"></span><span><b>Не знаю, спитаю…</b><span class="muted">Оберіть, до кого звернулися б</span></span></button></div>
-      <div id="asks"></div><div id="journal" aria-live="polite"></div>
-      <div class="navrow"><button class="btn ghost small" id="back" ${draft.i===0?"disabled":""}>Назад</button><button class="btn" id="next" disabled>${draft.i===sits.length-1?"Завершити політ":"Далі"}</button></div>
+     <section class="sit"><h2>${esc(s.title)}</h2><p class="text">${esc(s.text)}</p>
+      <div class="choices" id="ch">${s.options.map((o,k)=>choiceBtn(k,o.t,"",a&&cur(a)===k)).join("")}
+       <button type="button" class="choice dunno" data-v="-1" aria-pressed="${a&&cur(a)===-1?"true":"false"}"><span class="dot"></span><span><b>Не знаю, спитаю…</b><span class="muted">Оберіть, до кого звернулися б</span></span></button></div>
+      <div id="asks"></div><p class="small muted" id="chg" aria-live="polite"></p>
+      <div class="navrow end"><button class="btn" id="next" disabled>${draft.i===sits.length-1?"Завершити політ":"Далі"}</button></div>
      </section></div>`;
     const next=$("#next");
-    const ready=()=>{ const x=draft.answers[s.id]; next.disabled=!(x&&(x.o>=0||x.ask)) };
-    function showAsks(){ const x=draft.answers[s.id]; if(!x||x.o!==-1){ $("#asks").innerHTML=""; return }
-      const opts=[...roleOptions.map(r=>["role:"+r.id,r.id==="pilot"?"Пілота":r.name]),["giver","Грантодавця"],["expert","Зовнішнього експерта"],["none","Не знаю, кого"]];
+    const ready=()=>{ const x=draft.answers[s.id]; next.disabled=!(x&&(cur(x)>=0||x.ask)); $("#chg").textContent = x&&x.ch&&x.ch.length ? "Відповідь змінено. Зараховується перша, зміну буде видно у звіті." : "" };
+    function showAsks(){ const x=draft.answers[s.id]; if(!x||cur(x)!==-1){ $("#asks").innerHTML=""; return }
+      const opts=[...roleOptions.map(r=>["role:"+r.id,r.id==="pilot"?"Керівник проєкту":r.name]),["giver","Грантодавця"],["expert","Зовнішнього експерта"],["none","Не знаю, кого"]];
       $("#asks").innerHTML=`<div class="asks" role="group" aria-label="До кого звернетеся">${opts.map(([v,l])=>`<button type="button" class="chip" data-a="${v}" aria-pressed="${x.ask===v}">${esc(l)}</button>`).join("")}</div>`;
-      $("#asks").querySelectorAll(".chip").forEach(c=>c.onclick=()=>{ x.ask=c.dataset.a; save(); showAsks(); ready(); journal() }) }
-    function journal(){ const x=draft.answers[s.id]; const j=$("#journal"); if(!learn||!x||(x.o===-1&&!x.ask)){ j.innerHTML=""; return }
-      const good=s.options.find(o=>o.s==="g");
-      if(x.o===-1){ j.innerHTML=`<div class="journal n"><b>Бортовий журнал.</b> Добре, що чесно. Варто знати: ${esc(good.t.toLowerCase())}. ${esc(good.why)}.</div>`; return }
-      const o=s.options[x.o]; j.innerHTML=`<div class="journal ${o.s}"><b>${JOURNAL[o.s]}</b> ${esc(o.why)}.${o.s!=="g"?` Краще: ${esc(good.t.toLowerCase())}.`:""}</div>` }
-    bindChoices($("#ch"),v=>{ const o=+v; draft.answers[s.id]= o===-1 ? {o:-1,ask:(draft.answers[s.id]||{}).ask||null} : {o}; save(); showAsks(); ready(); journal() });
-    showAsks(); ready(); journal();
-    $("#back").onclick=()=>{ draft.i--; save(); step() };
+      $("#asks").querySelectorAll(".chip").forEach(c=>c.onclick=()=>{ x.ask=c.dataset.a; save(); showAsks(); ready() }) }
+    bindChoices($("#ch"),v=>{ const o=+v; const x=draft.answers[s.id];
+      if(!x) draft.answers[s.id]={o,ask:null};
+      else if(cur(x)!==o){ x.ch=x.ch||[]; x.ch.push(o); }
+      save(); showAsks(); ready() });
+    showAsks(); ready();
     next.onclick=async()=>{ if(draft.i<sits.length-1){ draft.i++; save(); step(); return }
       next.disabled=true; try{ await API.submit(mt,draft.answers); const ss=session.get(); ss.done=ss.done||{}; ss.done[id]=true; delete ss.drafts[id]; session.set(ss); finish() }catch(e){ toast(e.message); next.disabled=false } } }
-  function finish(){ app.innerHTML=`<div class="wrap"><div style="margin-bottom:16px">${lights()}</div><h2>Політ завершено</h2><div class="stack"><p>Дякуємо! Ваші відповіді збережено.</p><p>Результати відкриються, коли гру пройде весь екіпаж або сплине час рейсу. Ніхто не бачить ваших відповідей до цього моменту.</p><div style="display:flex;gap:10px;flex-wrap:wrap"><button class="btn" data-go="results-${esc(id)}">Перевірити результати</button>${session.get().pilot?`<button class="btn ghost" data-go="flight-${esc(id)}">До рейсу</button>`:""}</div></div></div>` }
+  function finish(){ app.innerHTML=`<div class="wrap"><div style="margin-bottom:16px">${lights()}</div><h2>Політ завершено</h2><div class="stack"><p>Дякуємо! Ваші відповіді збережено.</p><p>Результати відкриються, коли гру пройде вся команда або сплине час рейсу. Ніхто не бачить ваших відповідей до цього моменту. У звіті буде розбір кожної ситуації: що спрацювало, що ні і чому.</p><div style="display:flex;gap:10px;flex-wrap:wrap"><button class="btn" data-go="results-${esc(id)}">Перевірити результати</button>${session.get().pilot?`<button class="btn ghost" data-go="flight-${esc(id)}">До рейсу</button>`:""}</div></div></div>` }
   if(draft.i<0) intro(); else step();
 };
 
@@ -471,11 +589,35 @@ function fundingRoute(flight,R,members){
   if(prof==="A"){ title="Фокус — правильно реалізувати грант"; text=`Гроші вже є, тож головний ризик тепер — використання й звітність. ${R.grant!=null&&R.grant<.75?"Грантові ситуації показали прогалини: закрийте їх до першого траншу.":"Грантові правила екіпаж знає добре."}` }
   else if(prof==="G"){ if(fuel>=.7&&(R.sysScore.route??0)>=.6){ title="Власний шлях працює"; text="Фінансова система проєкту виглядає стійко, тож можна рухатися без інвестицій. Зовнішні гроші знадобляться хіба для масштабування." }
     else { title="На старт може знадобитися зовнішнє фінансування"; text=`Гра показала слабкі місця в «Паливі»: запас міцності, окупність або касові розриви. Варто подивитися на такі джерела: ${external}.` } }
-  else { if(c1s==="g"){ title="Спершу пілот власними силами, потім фінансування"; text=`Ви можете почати з малого кроку без зовнішніх грошей. Перевірте ідею, а потім залучайте ${prof==="B"?"грант":"фінансування"} на масштабування: з доведеним результатом шанси вищі. Можливі джерела: ${external}.` }
+  else { if(c1s==="g"){ title="Спершу пробний запуск власними силами, потім фінансування"; text=`Ви можете почати з малого кроку без зовнішніх грошей. Перевірте ідею, а потім залучайте ${prof==="B"?"грант":"фінансування"} на масштабування: з доведеним результатом шанси вищі. Можливі джерела: ${external}.` }
     else { title= prof==="B" ? "Грант — ваш шлях, але після підготовки" : "Вам, найімовірніше, потрібне зовнішнє фінансування"; text=`Можливі джерела: ${external}.` } }
   const todo = R.per.filter(p=>p.s.layer==="grant"&&p.sc!=null&&p.sc<.75).map(p=>p.s.title);
   return {title,text,todo: prof==="G"?[]:todo};
 }
+
+function debrief(R,members){
+  const items=R.per.filter(p=>p.sc!=null&&p.sc<1).sort((a,b)=>a.sc-b.sc);
+  if(!items.length) return `<section class="section"><h2>Розбір польоту</h2><p class="muted">Команда впоралася з усіма ситуаціями. Чудовий результат.</p></section>`;
+  const card=p=>{ const good=p.s.options.find(o=>o.s==="g");
+    const chosen=members.map(m=>({m,a:m.answers?.[p.s.id]})).filter(x=>x.a);
+    const worst=chosen.map(x=>x.a.o>=0?p.s.options[x.a.o]:null).filter(o=>o&&o.s!=="g").sort((a,b)=>SCORE[a.s]-SCORE[b.s])[0];
+    const who=chosen.map(({m,a})=>{ const st=a.o===-1?"u":p.s.options[a.o]?.s; return `<span class="who">${esc(m.name)} <span class="tag ${st==="u"?"n":st}">${STATUS[st]}</span></span>` }).join("");
+    return `<article class="db"><div class="db-head"><span class="bar" style="background:${colorVar(tone(p.sc))}"></span><div><h3>${esc(p.s.title)}</h3><p class="small muted">${esc(SYS[p.s.sys].name)}${p.learning?" · грантове правило, не впливає на загальну готовність":""}</p></div></div>
+      <p class="db-text">${esc(p.s.text)}</p><div class="whos">${who}</div>
+      ${worst?`<p><b>Чому це ризик.</b> ${esc(worst.why)}.</p>`:`<p><b>Чому це ризик.</b> Команда не знала, як діяти в цій ситуації.</p>`}
+      <p><b>Як краще.</b> ${esc(good.t)}. ${esc(good.why)}.</p></article>` };
+  const first=items.slice(0,6), rest=items.slice(6);
+  return `<section class="section"><h2>Розбір польоту</h2><p class="muted" style="max-width:40em">Ситуації, у яких команда обрала не найкращий хід або не знала відповіді. Найризиковіші — першими.</p>
+   ${first.map(card).join("")}
+   ${rest.length?`<details class="more"><summary>Ще ${rest.length} ${plural(rest.length,"ситуація","ситуації","ситуацій")}</summary>${rest.map(card).join("")}</details>`:""}</section>` }
+function changesBlock(members,f){
+  const sits=situationsFor(f.profile); const rows=[];
+  members.forEach(m=>sits.forEach(s=>{ const a=m.answers?.[s.id]; if(!a||!a.ch||!a.ch.length) return;
+    const st=o=>o===-1?"u":s.options[o]?.s; const from=st(a.o), to=st(a.ch[a.ch.length-1]);
+    rows.push(`<tr><td>${esc(m.name)}</td><td>${esc(s.title)}</td><td><span class="tag ${from==="u"?"n":from}">${STATUS[from]}</span></td><td><span class="tag ${to==="u"?"n":to}">${STATUS[to]}</span></td><td>${a.ch.length}</td></tr>`) }));
+  const per={}; members.forEach(m=>{ per[m.name]=sits.filter(s=>m.answers?.[s.id]?.ch?.length).length });
+  return `<section class="section"><h2>Змінені відповіді</h2><p class="muted" style="max-width:40em">Цей блок бачите лише ви як керівник рейсу. Учасники знали, що зараховується перша відповідь, а зміни видно у звіті. Один випадок може бути помилковим натисканням, тож звертайте увагу на закономірність.</p>
+   ${rows.length?`<p>${Object.entries(per).filter(([,n])=>n).map(([n,c])=>`${esc(n)}: ${c}`).join(", ")}</p><div class="tablewrap"><table class="map left"><thead><tr><th>Учасник</th><th>Ситуація</th><th>Перша відповідь</th><th>Остання</th><th>Змін</th></tr></thead><tbody>${rows.join("")}</tbody></table></div>`:`<p>Ніхто з команди не змінював відповідей.</p>`}</section>` }
 
 routes.results = async (app,id) => {
   const s=session.get(); const token = s.pilot?.token && (await API.listFlights(s.pilot.token)||[]).some(f=>f.id===id) ? s.pilot.token : s.members[id];
@@ -484,11 +626,11 @@ routes.results = async (app,id) => {
   if(!res.unlocked){ const done=f.members.filter(m=>m.finished).length;
     app.innerHTML=`<div class="wrap"><h2>Результати ще в дорозі</h2><div class="panel stack"><p>Завершили ${done} з ${f.crewSize}. Результати відкриються, коли гру пройдуть усі або сплине час рейсу.</p>${runway(done/Math.max(1,f.crewSize))}${s.pilot?`<button class="btn ghost" data-go="flight-${esc(id)}">До рейсу</button>`:""}</div></div>`; return }
   const members=res.members; if(!members.length) throw new Error("Ще ніхто не завершив гру.");
-  const R=analyse(f,members); const route=fundingRoute(f,R,members);
+  const R=analyse(f,members); const route=fundingRoute(f,R,members); const pilotView=!!(s.pilot&&token===s.pilot.token);
   const sysOrder=DATA.systems;
   const verdict = R.readiness>=.75 ? "Можна готуватися до зльоту" : R.readiness>=.5 ? "Літак майже готовий, але є системи, які треба доналаштувати" : "До зльоту ще треба попрацювати на землі";
   const roleName=r=>ROLE[r]?.name||r;
-  const askLabel=a=> a.startsWith("role:") ? (a==="role:pilot"?"пілота":"людини з роллю «"+roleName(a.slice(5))+"»") : ({giver:"грантодавця",expert:"зовнішнього експерта"}[a]);
+  const askLabel=a=> a.startsWith("role:") ? (a==="role:pilot"?"керівника проєкту":"людини з роллю «"+roleName(a.slice(5))+"»") : ({giver:"грантодавця",expert:"зовнішнього експерта"}[a]);
   const askLines = Object.entries(R.asks).sort((a,b)=>b[1]-a[1]).map(([a,n])=>{ const missing=a.startsWith("role:")&&!members.some(m=>m.role===a.slice(5)); return a==="none" ? `<li>${n} раз(и) учасники не знали, до кого звернутися</li>` : `<li>${n} раз(и) звернулися б до ${esc(askLabel(a))}${missing?` — <b>але цієї ролі в екіпажі немає</b>`:""}</li>` }).join("");
   app.innerHTML = `<div class="wrap wide">
    <p class="small muted">${s.pilot?`<button class="linkbtn" data-go="flight-${esc(id)}">До рейсу</button> · `:""}Рейс «${esc(f.project)}» · ${esc(PROF[f.profile]?.name)}</p>
@@ -502,9 +644,11 @@ routes.results = async (app,id) => {
    <section class="section"><h2>Панель приладів</h2><div class="gauges">${sysOrder.map(sy=>gauge(sy.name,R.sysScore[sy.id])).join("")}</div></section>
    <section class="section"><h2>Що підсвітив ліхтарик</h2>
     ${R.missingRoles.length?`<div class="gap"><span class="bar" style="background:var(--coral)"></span><div><b>Ролі, яких немає в екіпажі:</b> ${R.missingRoles.map(r=>esc(roleName(r))).join(", ")}. Саме ці люди мають відповідати за частину систем.</div></div>`:""}
-    ${R.weak.slice(0,5).map(p=>`<div class="gap"><span class="bar" style="background:${colorVar(tone(p.sc))}"></span><div><b>${esc(p.s.title)}</b> <span class="muted small">· ${esc(SYS[p.s.sys].name)}</span><div class="small">Краще рішення: ${esc(p.s.options.find(o=>o.s==="g").t.toLowerCase())}. ${esc(p.s.options.find(o=>o.s==="g").why)}.</div></div></div>`).join("") || `<p class="muted">Критичних прогалин немає.</p>`}
+    ${R.weak.length?`<p>${R.weak.length} ${plural(R.weak.length,"ситуація","ситуації","ситуацій")} з помітними прогалинами. Подробиці — у розборі польоту нижче.</p>`:`<p class="muted">Критичних прогалин немає.</p>`}
     ${askLines?`<h3 style="margin-top:24px">Чесні «не знаю»</h3><ul>${askLines}</ul>`:""}
    </section>
+   ${debrief(R,members)}
+   ${pilotView?changesBlock(members,f):""}
    ${R.disagreements.length?`<section class="section"><h2>Де екіпаж бачить по-різному</h2><p class="muted">Розбіжність у відповідях — це ризик: людей вистачає, а спільного розуміння немає.</p>
     ${R.disagreements.slice(0,6).map(p=>`<div class="gap"><span class="bar" style="background:var(--amber)"></span><div><b>${esc(p.s.title)}</b><div class="small">${members.map(m=>{ const st=R.status(p.s,m.answers?.[p.s.id]); return st?`${esc(m.name)}: <span class="tag ${st==="u"?"n":st}">${STATUS[st]}</span>`:"" }).join(" ")}</div></div></div>`).join("")}</section>`:""}
    <section class="section"><h2>Карта компетенцій</h2><p class="muted">Як кожен учасник впорався із ситуаціями кожної системи.</p>
@@ -513,7 +657,8 @@ routes.results = async (app,id) => {
     </tbody></table></div>
     <div class="legend"><span><i style="background:var(--green)"></i>Готово</span><span><i style="background:var(--amber)"></i>Частково</span><span><i style="background:var(--coral)"></i>Бракує</span></div></section>
    <section class="section"><h2>Маршрут фінансування</h2><div class="route"><h3>${esc(route.title)}</h3><p>${esc(route.text)}</p>${route.todo.length?`<p><b>Що вивчити перед подачею заявки:</b></p><ul>${route.todo.map(t=>`<li>${esc(t)}</li>`).join("")}</ul>`:""}</div></section>
-   <section class="section panel stack"><h2>Обговорити результати з експертом</h2><p>Покажемо, як закрити прогалини: навчання, ментор або людина в команду. Зв'яжемося електронною поштою.</p><button class="btn" id="exp">Хочу консультацію</button></section>
+   <section class="section panel stack"><h2>Детальний розбір з експертом</h2><p>У розборі вище — що пішло не так і як діяти краще. На консультації ми розберемо кожну прогалину з посиланнями на правила вашої програми, складемо план дій і підкажемо, кого або чого бракує в команді. Зв'яжемося електронною поштою.</p><button class="btn" id="exp">Хочу консультацію</button></section>
+   ${s.pilot?"":`<p class="small muted" style="margin-top:28px">Хочете так само перевірити власний проєкт? <button class="linkbtn" data-go="register">Запустити свій рейс</button></p>`}
    <footer>Результат — орієнтир для команди, а не юридична чи фінансова консультація. Правила конкретної програми й рішення про грант мають пріоритет.</footer>
   </div>`;
   $("#exp").onclick=async()=>{ try{ await API.expert(token,id,"results"); $("#exp").outerHTML=`<p><b>Готово.</b> Ми напишемо вам найближчим часом.</p>` }catch(e){ toast(e.message) } };
