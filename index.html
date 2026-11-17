@@ -1,0 +1,526 @@
+<!doctype html>
+<html lang="uk">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>ayrup — чи готовий ваш проєкт до зльоту?</title>
+<meta name="description" content="Гра-симулятор для НГО та малого бізнесу: команда проживає проєкт наперед і бачить, чого бракує до старту.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
+<script src="config.js"></script>
+<style>
+:root{
+  --coral:#E26D5A;--amber:#F0B94D;--green:#3FA97A;
+  --coral-ink:#B0442F;--amber-ink:#8A5F00;--green-ink:#24714F;
+  --surface:#FFFAF4;--raised:#FFFFFF;--sunken:#F6EEE4;--ink:#24201C;--muted:#6B625A;--line:#E8DED3;
+  --coral-soft:#FBE4DF;--amber-soft:#FCEFD3;--green-soft:#DDF1E7;
+  --grad:linear-gradient(90deg,var(--coral),var(--amber) 50%,var(--green));
+  --display:Fredoka,"Arial Rounded MT Bold",system-ui,sans-serif;
+  --body:Nunito,system-ui,-apple-system,"Segoe UI",sans-serif;
+  --r-sm:8px;--r-md:16px;--r-pill:999px;
+  color-scheme:light;
+  box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --coral-ink:#F09A89;--amber-ink:#F5CB72;--green-ink:#6FD0A3;
+  --surface:#1C1A18;--raised:#262320;--sunken:#161412;--ink:#F5EFE8;--muted:#B5ACA3;--line:#3A3531;
+  --coral-soft:#3B2622;--amber-soft:#382E1A;--green-soft:#1D3328;color-scheme:dark;}}
+:root[data-theme="dark"]{
+  --coral-ink:#F09A89;--amber-ink:#F5CB72;--green-ink:#6FD0A3;
+  --surface:#1C1A18;--raised:#262320;--sunken:#161412;--ink:#F5EFE8;--muted:#B5ACA3;--line:#3A3531;
+  --coral-soft:#3B2622;--amber-soft:#382E1A;--green-soft:#1D3328;color-scheme:dark;}
+*,*::before,*::after{box-sizing:inherit}
+#app:focus{outline:none}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+body{margin:0;background:var(--surface);color:var(--ink);font:16px/1.55 var(--body);-webkit-font-smoothing:antialiased}
+h1,h2,h3{font-family:var(--display);font-weight:600;line-height:1.15;margin:0 0 .5em;letter-spacing:-.01em}
+h1{font-size:clamp(34px,6vw,56px);font-weight:700}
+h2{font-size:clamp(24px,3.6vw,32px)}
+h3{font-size:20px}
+p{margin:0 0 1em}
+a{color:var(--green-ink)}
+.wrap{max-width:760px;margin:0 auto;padding:24px 20px 64px}
+.wide{max-width:1040px}
+.muted{color:var(--muted)}
+.small{font-size:14px}
+.topbar{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:14px 20px;max-width:1040px;margin:0 auto}
+.logo{display:inline-flex;height:30px}.logo svg{height:100%;width:auto}
+.logo-btn{background:none;border:0;padding:0;cursor:pointer;display:inline-flex}
+.btn{font:700 16px/1 var(--body);border:0;border-radius:var(--r-pill);padding:15px 26px;cursor:pointer;background:var(--green);color:#24201C;display:inline-flex;align-items:center;gap:8px;text-decoration:none}
+.btn:hover{filter:brightness(1.05)}.btn:disabled{opacity:.45;cursor:not-allowed}
+.btn.ghost{background:transparent;color:var(--ink);box-shadow:inset 0 0 0 1.5px var(--line)}
+.btn.ghost:hover{box-shadow:inset 0 0 0 1.5px var(--muted)}
+.btn.small{padding:10px 16px;font-size:14px}
+.linkbtn{background:none;border:0;color:var(--green-ink);font:inherit;font-weight:700;cursor:pointer;padding:0;text-decoration:underline;text-underline-offset:3px}
+:focus-visible{outline:3px solid var(--amber);outline-offset:3px;border-radius:6px}
+.banner{background:var(--amber-soft);color:var(--ink);font-size:14px;padding:10px 20px;text-align:center}
+.panel{background:var(--raised);border:1px solid var(--line);border-radius:var(--r-md);padding:24px}
+.stack>*+*{margin-top:16px}
+label.field{display:block;font-weight:700;font-size:15px}
+label.field span.hint{display:block;font-weight:400;color:var(--muted);font-size:14px}
+input[type=text],input[type=email],select{width:100%;margin-top:6px;font:16px var(--body);padding:13px 14px;border-radius:var(--r-sm);border:1.5px solid var(--muted);background:var(--raised);color:var(--ink)}
+input:focus{outline:none;border-color:var(--green-ink);box-shadow:0 0 0 3px var(--green-soft)}
+.check{display:flex;gap:10px;align-items:flex-start;font-size:14px;color:var(--muted)}
+.check input{margin-top:3px;width:18px;height:18px;accent-color:var(--green)}
+.err{color:var(--coral-ink);font-size:14px;font-weight:700;min-height:1em}
+.choices{display:grid;gap:10px}
+.choice{display:flex;gap:14px;align-items:flex-start;text-align:left;width:100%;background:var(--raised);border:1.5px solid var(--line);border-radius:var(--r-md);padding:16px 18px;cursor:pointer;font:inherit;color:inherit}
+.choice:hover{border-color:var(--muted)}
+.choice[aria-pressed=true]{border-color:var(--green-ink);box-shadow:0 0 0 3px var(--green-soft)}
+.choice b{display:block;font-family:var(--display);font-weight:600;font-size:18px}
+.choice .dot{flex:0 0 22px;height:22px;border-radius:50%;border:2px solid var(--line);margin-top:2px}
+.choice[aria-pressed=true] .dot{border:7px solid var(--green)}
+.grid2{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:10px}
+/* hero */
+.hero{display:grid;gap:28px;padding:32px 0 8px}
+.hero p.lead{font-size:19px;max-width:34em}
+.runway{position:relative;height:14px;border-radius:var(--r-pill);background:var(--sunken);overflow:visible}
+.runway .fill{position:absolute;inset:0 auto 0 0;border-radius:inherit;background:var(--grad);background-size:var(--full,100%) 100%}
+.runway .plane{position:absolute;top:50%;width:34px;height:34px;margin:-17px 0 0 -17px;color:var(--ink);transition:left .6s cubic-bezier(.3,.7,.2,1)}
+.runway .fill{transition:width .6s cubic-bezier(.3,.7,.2,1)}
+.lights{display:flex;gap:8px}
+.lights i{width:14px;height:14px;border-radius:50%;display:block}
+.steps{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:24px;margin:40px 0}
+.steps div{border-top:3px solid var(--line);padding-top:14px}
+.steps b{font-family:var(--display);font-size:20px;font-weight:600;display:block;margin-bottom:4px}
+.steps .n{font-family:var(--display);font-weight:700;color:var(--muted);font-size:15px}
+.systems{display:flex;flex-wrap:wrap;gap:8px;margin:12px 0 0;padding:0;list-style:none}
+.systems li{background:var(--raised);border:1px solid var(--line);border-radius:var(--r-pill);padding:7px 14px;font-size:14px;font-weight:700}
+footer{border-top:1px solid var(--line);margin-top:48px;padding-top:20px;font-size:14px;color:var(--muted)}
+/* cabinet */
+.flight-row{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:16px 0;border-bottom:1px solid var(--line)}
+.flight-row:last-child{border-bottom:0}
+.tag{display:inline-block;font-size:13px;font-weight:800;border-radius:var(--r-pill);padding:4px 10px}
+.tag.g{background:var(--green-soft);color:var(--green-ink)}.tag.a{background:var(--amber-soft);color:var(--amber-ink)}.tag.c{background:var(--coral-soft);color:var(--coral-ink)}.tag.n{background:var(--sunken);color:var(--muted)}
+.copy{display:flex;gap:8px;margin-top:8px}.copy input{margin:0}
+.crew li{display:flex;justify-content:space-between;gap:12px;padding:10px 0;border-bottom:1px solid var(--line)}
+.crew{list-style:none;margin:0;padding:0}
+/* play */
+.playhead{position:sticky;top:0;z-index:5;background:var(--surface);padding:14px 0 12px}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:10;background:var(--surface)}
+.playmeta{display:flex;justify-content:space-between;align-items:baseline;gap:12px;font-size:14px;color:var(--muted);margin-bottom:10px;font-weight:700}
+.sysname{color:var(--ink);font-family:var(--display);font-weight:600;font-size:16px}
+.sit h2{margin-top:18px}
+.sit .text{font-size:19px;max-width:36em}
+.dunno{margin-top:6px}
+.asks{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}
+.chip{font:700 14px var(--body);border-radius:var(--r-pill);border:1.5px solid var(--line);background:var(--raised);color:var(--ink);padding:9px 14px;cursor:pointer}
+.chip[aria-pressed=true]{border-color:var(--green-ink);background:var(--green-soft)}
+.navrow{display:flex;justify-content:space-between;align-items:center;margin-top:24px;gap:12px}
+.journal{margin-top:20px;border-radius:var(--r-md);padding:18px 20px;border:1.5px solid}
+.journal.g{background:var(--green-soft);border-color:var(--green)}.journal.a{background:var(--amber-soft);border-color:var(--amber)}.journal.c{background:var(--coral-soft);border-color:var(--coral)}.journal.n{background:var(--sunken);border-color:var(--line)}
+.journal b{font-family:var(--display);font-weight:600}
+/* results */
+.bignum{font-family:var(--display);font-weight:700;font-size:clamp(88px,16vw,148px);line-height:.9;letter-spacing:-.03em}
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:24px;margin:28px 0}
+.kpi .v{font-family:var(--display);font-weight:700;font-size:40px;line-height:1}
+.gauges{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+@media (max-width:640px){.gauges{grid-template-columns:repeat(2,1fr)}}
+.gauge{background:var(--raised);border:1px solid var(--line);border-radius:var(--r-md);padding:14px;text-align:center}
+.gauge svg{width:100%;max-width:120px;display:block;margin:0 auto}
+.gauge b{display:block;font-family:var(--display);font-weight:600}
+.gauge .pct{font-family:var(--display);font-weight:700;font-size:22px}
+.section{margin-top:44px}
+.gap{display:flex;gap:14px;padding:14px 0;border-bottom:1px solid var(--line)}
+.gap .bar{flex:0 0 6px;border-radius:3px}
+.tablewrap{overflow-x:auto}
+table.map{border-collapse:collapse;width:100%;min-width:520px;font-size:14px}
+table.map th,table.map td{padding:10px 8px;border-bottom:1px solid var(--line);text-align:center}
+table.map th:first-child,table.map td:first-child{text-align:left}
+table.map td .cell{display:inline-block;width:16px;height:16px;border-radius:50%}
+.route{background:var(--raised);border:1px solid var(--line);border-radius:var(--r-md);padding:24px;border-top:6px solid var(--green)}
+.legend{display:flex;flex-wrap:wrap;gap:14px;font-size:14px;color:var(--muted);margin-top:10px}
+.legend span{display:inline-flex;align-items:center;gap:6px}.legend i{width:12px;height:12px;border-radius:50%;display:inline-block}
+.toast{position:fixed;left:50%;bottom:calc(20px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--ink);color:var(--surface);padding:12px 18px;border-radius:var(--r-pill);font-weight:700;font-size:14px;z-index:20}
+.reveal{animation:rise .7s cubic-bezier(.2,.7,.2,1) both}
+@keyframes rise{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
+</style>
+</head>
+<body>
+<div id="banner"></div>
+<header class="topbar"><button class="logo-btn" data-go="start" aria-label="ayrup — на головну"><span class="logo"><svg role="img" aria-label="ayrup" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 2649 819" ><defs><linearGradient id="ayrupLogoGrad" gradientUnits="userSpaceOnUse" x1="40" y1="0" x2="2609" y2="0"><stop offset="0" stop-color="#E26D5A"/><stop offset="0.5" stop-color="#F0B94D"/><stop offset="1" stop-color="#3FA97A"/></linearGradient></defs><g fill="url(#ayrupLogoGrad)"><path d="M461 556.6Q416 556.6 394.5 541.6Q373 526.6 374 507.6H388Q383 514.6 368.5 526.1Q354 537.6 330.0 547.1Q306 556.6 271 556.6Q226 556.6 184.5 536.1Q143 515.6 110.5 479.6Q78 443.6 59.0 398.1Q40 352.6 40 302.6Q40 253.6 59.0 208.6Q78 163.6 111.0 128.1Q144 92.6 185.0 72.1Q226 51.6 271 51.6Q305 51.6 328.5 61.6Q352 71.6 366.5 83.6Q381 95.6 386 103.6H375Q374 78.6 395.5 64.6Q417 50.6 462 50.6Q507 50.6 525.5 64.1Q544 77.6 548.0 98.6Q552 119.6 552 141.6V466.6Q552 488.6 548.0 509.6Q544 530.6 525.5 543.6Q507 556.6 461 556.6ZM296 375.6Q315 375.6 330.5 365.6Q346 355.6 355.5 339.1Q365 322.6 365 303.6Q365 283.6 355.5 267.6Q346 251.6 330.0 241.6Q314 231.6 294 231.6Q274 231.6 257.5 241.6Q241 251.6 231.0 268.1Q221 284.6 221 304.6Q221 323.6 231.5 339.6Q242 355.6 259.0 365.6Q276 375.6 296 375.6Z"/><path d="M751 763.6Q702 741.6 694.0 715.1Q686 688.6 707 645.6L950 101.6Q971 54.6 995.0 45.6Q1019 36.6 1069 56.6Q1117 78.6 1125.5 103.6Q1134 128.6 1115 170.6L870 719.6Q850 766.6 825.5 776.1Q801 785.6 751 763.6ZM832 543.6 594 183.6Q568 143.6 573.0 117.1Q578 90.6 621 63.6Q668 34.6 693.5 41.1Q719 47.6 746 88.6L908 333.6Z"/><path d="M1238 558.6Q1193 558.6 1174.0 545.1Q1155 531.6 1151.5 510.1Q1148 488.6 1148 466.6V140.6Q1148 117.6 1152.0 97.1Q1156 76.6 1175.0 63.6Q1194 50.6 1239 50.6Q1283 50.6 1301.5 62.6Q1320 74.6 1324.0 89.1Q1328 103.6 1328 111.6L1312 105.6Q1312 105.6 1320.0 96.6Q1328 87.6 1343.5 75.6Q1359 63.6 1380.5 54.6Q1402 45.6 1429 45.6Q1438 45.6 1451.5 47.1Q1465 48.6 1480.5 52.6Q1496 56.6 1509.5 64.6Q1523 72.6 1531.5 85.6Q1540 98.6 1540 117.6Q1540 167.6 1518.5 202.6Q1497 237.6 1462 237.6Q1443 237.6 1435.0 235.1Q1427 232.6 1423.5 230.1Q1420 227.6 1415.5 225.1Q1411 222.6 1399 222.6Q1384 222.6 1371.5 226.1Q1359 229.6 1349.5 236.6Q1340 243.6 1335.0 253.1Q1330 262.6 1330 273.6V468.6Q1330 490.6 1326.0 511.6Q1322 532.6 1303.0 545.6Q1284 558.6 1238 558.6Z"/><path d="M1787 556.6Q1739 556.6 1697.5 537.6Q1656 518.6 1625.0 484.1Q1594 449.6 1577.0 403.6Q1560 357.6 1560 303.6V140.6Q1560 117.6 1564.0 97.1Q1568 76.6 1587.0 63.1Q1606 49.6 1651 49.6Q1697 49.6 1715.5 63.1Q1734 76.6 1738.0 97.6Q1742 118.6 1742 141.6V303.6Q1742 326.6 1750.5 342.6Q1759 358.6 1775.5 367.1Q1792 375.6 1814 375.6Q1836 375.6 1852.0 366.6Q1868 357.6 1877.0 341.6Q1886 325.6 1886 303.6V139.6Q1886 116.6 1890.0 96.1Q1894 75.6 1913.0 62.6Q1932 49.6 1977 49.6Q2023 49.6 2041.5 63.1Q2060 76.6 2064.0 97.6Q2068 118.6 2068 140.6V469.6Q2068 491.6 2064.0 511.6Q2060 531.6 2041.0 544.6Q2022 557.6 1977 557.6Q1944 557.6 1925.5 550.1Q1907 542.6 1899.0 531.1Q1891 519.6 1889.5 508.1Q1888 496.6 1888 488.6L1905 493.6Q1905 493.6 1897.0 503.1Q1889 512.6 1873.5 525.1Q1858 537.6 1836.5 547.1Q1815 556.6 1787 556.6Z"/><path d="M2378 546.6Q2329 546.6 2293.0 526.6Q2257 506.6 2234.0 472.1Q2211 437.6 2200.0 393.6Q2189 349.6 2190 300.6Q2191 252.6 2202.5 207.6Q2214 162.6 2237.0 127.6Q2260 92.6 2295.0 72.1Q2330 51.6 2378 51.6Q2422 51.6 2463.5 72.6Q2505 93.6 2538.0 129.1Q2571 164.6 2590.0 209.6Q2609 254.6 2609 302.6Q2609 352.6 2590.0 397.1Q2571 441.6 2538.5 475.1Q2506 508.6 2464.5 527.6Q2423 546.6 2378 546.6ZM2193 770.6Q2149 770.6 2130.0 757.6Q2111 744.6 2107.5 724.6Q2104 704.6 2104 682.6V139.6Q2104 117.6 2107.5 97.6Q2111 77.6 2129.5 64.1Q2148 50.6 2192 50.6Q2227 50.6 2250.0 60.1Q2273 69.6 2283 89.6V681.6Q2285 703.6 2280.5 724.1Q2276 744.6 2257.0 757.6Q2238 770.6 2193 770.6ZM2354 376.6Q2374 376.6 2390.5 366.6Q2407 356.6 2417.0 340.1Q2427 323.6 2427 304.6Q2427 284.6 2417.5 268.1Q2408 251.6 2391.5 242.1Q2375 232.6 2355 232.6Q2335 232.6 2318.5 242.6Q2302 252.6 2292.5 268.6Q2283 284.6 2283 304.6Q2283 323.6 2293.0 340.1Q2303 356.6 2319.0 366.6Q2335 376.6 2354 376.6Z"/></g><metadata><c2pa:manifest>AAAWgmp1bWIAAAAeanVtZGMycGEAEQAQgAAAqgA4m3EDYzJwYQAAABZcanVtYgAAAEdqdW1kYzJtYQARABCAAACqADibcQN1cm46YzJwYTozZThlYzBiNC1lZDFmLTQ2NzQtODA1ZS1iYjY4NGM4MWU3ZDkAAAADl2p1bWIAAAApanVtZGMyYXMAEQAQgAAAqgA4m3EDYzJwYS5hc3NlcnRpb25zAAAAALxqdW1iAAAARGp1bWRjYm9yABEAEIAAAKoAOJtxE2MycGEuaW5ncmVkaWVudC52MwAAAAAYYzJzaGd17mcb5ivOLFRWb81mxo0AAABwY2JvcqNpZGM6Zm9ybWF0bWltYWdlL3N2Zyt4bWxqaW5zdGFuY2VJRHgseG1wOmlpZDphMDBhMjcwZS0xYjgxLTQzMmQtOTFkMC05MzY2YWE2Mzg5Y2ZscmVsYXRpb25zaGlwaHBhcmVudE9mAAAB4mp1bWIAAABBanVtZGNib3IAEQAQgAAAqgA4m3ETYzJwYS5hY3Rpb25zLnYyAAAAABhjMnNo4GhtybhJB8APuAHcGE8sOgAAAZljYm9yomdhY3Rpb25zgqJmYWN0aW9ua2MycGEub3BlbmVkanBhcmFtZXRlcnOha2luZ3JlZGllbnRzgaJjdXJseC1zZWxmI2p1bWJmPWMycGEuYXNzZXJ0aW9ucy9jMnBhLmluZ3JlZGllbnQudjNkaGFzaFggl+kUMcBn5uAJUUpvU27Izy4a/zoH6+LiuhqIFl7ha/OkZmFjdGlvbngdY29tLmFudGhyb3BpYy5jbGF1ZGUucHJvdmlkZWRqcGFyYW1ldGVyc6F4H2NvbS5hbnRocm9waWMub3JpZ2luLWNvbmZpZGVuY2VndW5rbm93bmtkZXNjcmlwdGlvbnhmQ2xhdWRlIHByb3ZpZGVkIHRoaXMgZmlsZSBhdCB0aGUgcmVxdWVzdCBvZiBhIHVzZXIgYW5kIG1heSBoYXZlIGNyZWF0ZWQgb3IgbW9kaWZpZWQgdGhlIGZpbGUgY29udGVudHMubXNvZnR3YXJlQWdlbnShZG5hbWVmQ2xhdWRlcmFsbEFjdGlvbnNJbmNsdWRlZPUAAADIanVtYgAAAEBqdW1kY2JvcgARABCAAACqADibcRNjMnBhLmhhc2guZGF0YQAAAAAYYzJzaO/Ps3XWxh6PfsUeS3y7nTsAAACAY2JvcqVjYWxnZnNoYTI1NmNwYWRMAAAAAAAAAAAAAAAAZGhhc2hYIOdHHXi3vWySha5gVQp8bpfnCvacFEjQXjqY2+xV4E6vZG5hbWVuanVtYmYgbWFuaWZlc3RqZXhjbHVzaW9uc4GiZXN0YXJ0GSA3Zmxlbmd0aBkeBAAAAj5qdW1iAAAAJ2p1bWRjMmNsABEAEIAAAKoAOJtxA2MycGEuY2xhaW0udjIAAAACD2Nib3KlY2FsZ2ZzaGEyNTZpc2lnbmF0dXJleE1zZWxmI2p1bWJmPS9jMnBhL3VybjpjMnBhOjNlOGVjMGI0LWVkMWYtNDY3NC04MDVlLWJiNjg0YzgxZTdkOS9jMnBhLnNpZ25hdHVyZWppbnN0YW5jZUlEeCx4bXA6aWlkOjdlZjlhNTdjLTEyY2YtNGFiMy05NGI0LWZjNGRjMjY0ZDllMXJjcmVhdGVkX2Fzc2VydGlvbnODomN1cmx4LXNlbGYjanVtYmY9YzJwYS5hc3NlcnRpb25zL2MycGEuaW5ncmVkaWVudC52M2RoYXNoWCCX6RQxwGfm4AlRSm9TbsjPLhr/Ogfr4uK6GogWXuFr86JjdXJseCpzZWxmI2p1bWJmPWMycGEuYXNzZXJ0aW9ucy9jMnBhLmFjdGlvbnMudjJkaGFzaFggrpCihVRFpN047Zb1EQa0SvzI7W58v23ti6MnYdhj9W6iY3VybHgpc2VsZiNqdW1iZj1jMnBhLmFzc2VydGlvbnMvYzJwYS5oYXNoLmRhdGFkaGFzaFggF+BaHZKJL2aHMT2rXB7AmE3I/F7hqgaLdReppz1sAxd0Y2xhaW1fZ2VuZXJhdG9yX2luZm+jZG5hbWVvQW50aHJvcGljIEZpbGVzZ3ZlcnNpb25lMS4wLjBrc3BlY1ZlcnNpb25lMi40LjAAABA4anVtYgAAAChqdW1kYzJjcwARABCAAACqADibcQNjMnBhLnNpZ25hdHVyZQAAABAIY2JvctKEWQISogEmGCFZAgowggIGMIIBjaADAgECAhRA5aAK7sI50L64g/oGQgU9Z1UTADAKBggqhkjOPQQDAzBJMRcwFQYDVQQKEw5BbnRocm9waWMsIFBCQzEuMCwGA1UEAxMlQW50aHJvcGljIENvbnRlbnQgQ3JlZGVudGlhbHMgUm9vdCBDQTAeFw0yNjA4MDcxODQzNTZaFw0yODA4MDYxOTQzNTZaMEQxFzAVBgNVBAoTDkFudGhyb3BpYywgUEJDMSkwJwYDVQQDEyBBbnRocm9waWMgQ2xhdWRlIENvbnRlbnQgU2lnbmluZzBZMBMGByqGSM49AgEGCCqGSM49AwEHA0IABJh6CmvLUBgFFNU0vUKlOVtE6djd17L5SuwX0LemFisBM3dkd/3cyjxFA3Qo5S46fX0/ihY0VZ7mfb9KF703t5OjWDBWMA4GA1UdDwEB/wQEAwIHgDAVBgNVHSUEDjAMBgorBgEEAYPoXgIBMAwGA1UdEwEB/wQCMAAwHwYDVR0jBBgwFoAUzlHiBIFOZFsj+OPEz5o+nMHXXMIwCgYIKoZIzj0EAwMDZwAwZAIwMXMdFJ4BetLLVY7ORuE9noqbbAZOZn/aArXyTwFAZfKrPzxF2vPoJNf1+UCdg1XGAjBwX1zd9WGqYkqmL5SFqw1QySjr1zJfpJM9+1rdDwSPLMOPOjKuiXjoU/pUUeG9RwmhY3BhZFkNngAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAPZYQMEYA3h6zyygLMb79nBcAoi4Hg3uaWhxavDAZ1LNH3Ucq+xX2HnmDsgPdZiV3NuMt1gAMm+sgDrAIYYBmR2kX0c=</c2pa:manifest></metadata></svg></span></button><nav id="nav"></nav></header>
+<main id="app" tabindex="-1"></main>
+<div id="toast" class="toast" hidden role="status"></div>
+<script>
+const DATA = {"systems": [{"id": "route", "name": "Маршрут", "desc": "Мета, аудиторія, проблема", "owners": ["pilot"]}, {"id": "crew", "name": "Екіпаж", "desc": "Ролі, відповідальність, люди", "owners": ["pilot"]}, {"id": "fuel", "name": "Паливо", "desc": "Бюджет, фінанси, кешфлоу", "owners": ["finance"]}, {"id": "engines", "name": "Двигуни", "desc": "Процеси, планування, закупівлі", "owners": ["ops"]}, {"id": "nav", "name": "Навігація", "desc": "Метрики прогресу й результату", "owners": ["ops", "pilot"]}, {"id": "box", "name": "Чорна скринька", "desc": "Облік і звітність", "owners": ["finance"]}, {"id": "weather", "name": "Погода", "desc": "Ризики й зовнішні фактори", "owners": ["pilot"]}, {"id": "ground", "name": "Зв'язок із землею", "desc": "Партнери, стейкхолдери, аудиторія", "owners": ["comms"]}], "roles": [{"id": "pilot", "name": "Пілот", "desc": "Керівник проєкту, приймає ключові рішення"}, {"id": "finance", "name": "Фінанси", "desc": "Бюджет, облік, платежі"}, {"id": "ops", "name": "Операційка", "desc": "Процеси, закупівлі, планування"}, {"id": "comms", "name": "Комунікації та продажі", "desc": "Аудиторія, партнери, клієнти"}, {"id": "content", "name": "Зміст програми", "desc": "Те, що проєкт робить для людей"}, {"id": "other", "name": "Інша роль", "desc": "Волонтер, експерт, радник"}], "profiles": [{"id": "A", "name": "Грант уже є", "desc": "Маємо рішення про грант або чекаємо на нього"}, {"id": "B", "name": "Подаємось на грант", "desc": "Готуємо заявку, правила ще вивчаємо"}, {"id": "V", "name": "Ще не знаємо", "desc": "Не впевнені, чи потрібні нам зовнішні гроші"}, {"id": "G", "name": "Власним коштом", "desc": "Рухаємось на свої гроші чи виручку, без інвестицій"}], "orgtypes": [{"id": "ngo", "name": "Неприбуткова організація", "desc": "e.V., gGmbH, фонд"}, {"id": "biz", "name": "Бізнес", "desc": "Стартап, ФОП, GmbH, UG"}, {"id": "init", "name": "Ініціатива без юрособи", "desc": "Група людей з ідеєю"}], "situations": [{"id": "M1", "sys": "route", "layer": "base", "key": false, "title": "Проєкт одним реченням", "text": "Попросіть себе: яку проблему вирішує проєкт і для кого? Чи можете ви сказати це одним реченням?", "who": ["pilot", "content"], "options": [{"t": "Можемо, і вже перевіряли це формулювання на людях із цільової групи", "s": "g", "why": "Мета чітка й перевірена"}, {"t": "Можемо, але ні з ким не перевіряли", "s": "a", "why": "Формулювання є, але це поки гіпотеза"}, {"t": "Кожен у команді скаже по-своєму", "s": "c", "why": "Немає спільного розуміння мети"}]}, {"id": "M2", "sys": "route", "layer": "base", "key": false, "title": "Звідки ви знаєте?", "text": "Звідки ви знаєте, що ця проблема справді існує і для людей важлива?", "who": ["pilot", "content"], "options": [{"t": "Говорили щонайменше з десятьма людьми з цільової групи або маємо дані", "s": "g", "why": "Проблема підтверджена"}, {"t": "З власного досвіду", "s": "a", "why": "Сильний старт, але одного досвіду замало, щоб узагальнювати"}, {"t": "Це очевидно", "s": "c", "why": "Непідтверджене припущення — найчастіша причина, чому проєкти не знаходять своїх людей"}]}, {"id": "M3", "sys": "route", "layer": "grant", "key": false, "title": "Програма про інше", "text": "Мета програми — допомогти молоді вийти на ринок праці. Ваш проєкт — кулінарні курси для всіх охочих. Що робите?", "who": ["pilot", "content"], "options": [{"t": "Подаємо як є: курси ж корисні", "s": "c", "why": "Проєкт не відповідає меті програми, заявку, найімовірніше, відхилять"}, {"t": "Переписуємо заявку під програму, але проєкт робимо як планували", "s": "a", "why": "Розбіжність між заявкою і реалізацією проявиться у звіті"}, {"t": "Шукаємо програму під наш проєкт або чесно адаптуємо проєкт під мету й цільову групу", "s": "g", "why": "Заявка і реалізація збігаються"}]}, {"id": "M4", "sys": "route", "layer": "self", "key": false, "title": "Хто платить?", "text": "Хто купує результат вашого проєкту і скільки готовий платити?", "who": ["pilot", "comms"], "options": [{"t": "Знаємо платника й ціну, маємо перші оплати", "s": "g", "why": "Модель доходу підтверджена"}, {"t": "Знаємо, хто міг би платити, але ще не продавали", "s": "a", "why": "Гіпотеза, яку варто перевірити першими продажами"}, {"t": "Ще не думали про це", "s": "c", "why": "Без платника проєкт живе лише на зовнішні гроші"}]}, {"id": "E1", "sys": "crew", "layer": "base", "key": false, "title": "Ключова людина вибула", "text": "Людина, яка знає все про фінанси проєкту, захворіла на три тижні. Що відбувається?", "who": ["pilot"], "options": [{"t": "Є заміна, а процеси описані: робота йде далі", "s": "g", "why": "Знання не тримаються на одній людині"}, {"t": "Впораємося, але повільно і з помилками", "s": "a", "why": "Ризик залежності від однієї людини"}, {"t": "Усе зупиняється до її повернення", "s": "c", "why": "Критична залежність від однієї людини"}]}, {"id": "E2", "sys": "crew", "layer": "base", "key": false, "title": "Хто веде фінанси?", "text": "Хто у вас відповідає за фінанси проєкту?", "who": ["pilot", "finance"], "options": [{"t": "Окрема людина з досвідом", "s": "g", "why": "Роль закрита"}, {"t": "Пілот сам, паралельно з усім іншим", "s": "a", "why": "Роль закрита частково, перевантаження пілота"}, {"t": "Ніхто конкретно, бухгалтер з'являється раз на рік", "s": "c", "why": "Роль не закрита"}]}, {"id": "E3", "sys": "crew", "layer": "base", "key": false, "title": "Волонтери йдуть", "text": "Проєкт тримається на волонтерах. Двоє ключових кажуть, що через три місяці підуть. Що робите?", "who": ["pilot"], "options": [{"t": "У нас є план передачі справ і бюджет на оплачувану роль", "s": "g", "why": "Ризик відходу людей закладено"}, {"t": "Будемо шукати нових волонтерів", "s": "a", "why": "Можливо, але без плану передачі знання підуть разом із людьми"}, {"t": "Якось буде", "s": "c", "why": "Немає плану щодо команди"}]}, {"id": "E4", "sys": "crew", "layer": "grant", "key": false, "title": "Зарплата координатора", "text": "Ви хочете платити координатору з гранту вищу ставку, ніж передбачено в плані. Що робите?", "who": ["pilot", "finance"], "options": [{"t": "Платимо, скільки домовились", "s": "c", "why": "Оплату з гранту обмежують план фінансування і правила грантодавця"}, {"t": "Перевіряємо обмеження на оплату праці й погоджуємо ставку з грантодавцем", "s": "g", "why": "Безпечно: багато програм обмежують зарплати рівнем держслужбовців (Besserstellungsverbot) — перевірте для своєї програми"}, {"t": "Доплачуємо різницю з інших коштів, нікому не кажучи", "s": "a", "why": "Іноді можливо, але без узгодження це ризик"}]}, {"id": "C1", "sys": "fuel", "layer": "base", "key": false, "title": "Чи потрібні вам гроші ззовні?", "text": "Уявіть, що зовнішніх грошей немає взагалі. Що з вашого проєкту можна запустити вже зараз?", "who": ["pilot"], "options": [{"t": "Нічого, без грошей ми не можемо почати", "s": "a", "why": "Можливо, так і є, але варто пошукати менший перший крок"}, {"t": "Можемо запустити пілот на власні ресурси й перевірити, чи це потрібно людям", "s": "g", "why": "Спершу перевірка, а гроші потім масштабують те, що вже працює"}, {"t": "Не думали про це, одразу шукали фінансування", "s": "c", "why": "Ризик взяти гроші під непротестовану ідею"}]}, {"id": "C2", "sys": "fuel", "layer": "base", "key": false, "title": "Скільки ви протримаєтесь?", "text": "Якщо з завтрашнього дня жодних надходжень не буде, скільки місяців проєкт проживе на тому, що є?", "who": ["pilot", "finance"], "options": [{"t": "Знаємо точно, рахуємо щомісяця", "s": "g", "why": "Є контроль над кешфлоу"}, {"t": "Приблизно, але точно не рахували", "s": "a", "why": "Розуміння є, контролю немає"}, {"t": "Не знаємо", "s": "c", "why": "Немає базового фінансового обліку"}]}, {"id": "C3", "sys": "fuel", "layer": "base", "key": false, "title": "Скільки коштує проєкт насправді?", "text": "У бюджеті є зарплати, оренда й закупівлі. Чи врахували ви також податки й соцвнески на зарплати, бухгалтерію, страхування, банківські комісії й резерв на непередбачене?", "who": ["finance"], "options": [{"t": "Так, усе це є в бюджеті", "s": "g", "why": "Бюджет відповідає реальним витратам"}, {"t": "Частину врахували", "s": "a", "why": "Ризик недофінансування"}, {"t": "Ні, бюджет тільки на прямі витрати", "s": "c", "why": "Приховані витрати з'їдять гроші проєкту"}]}, {"id": "P1", "sys": "fuel", "layer": "grant", "key": true, "title": "Гроші приходять після витрат", "text": "Вам погодили грант 60 000 €. Гроші виплачують лише після того, як ви оплатили рахунки й подали підтвердження. На рахунку 4 000 €, а перший місяць коштує 12 000 €. Що робите?", "who": ["pilot", "finance"], "options": [{"t": "Стартуємо, а рахунки оплатимо, коли прийдуть гроші", "s": "c", "why": "Гроші не прийдуть, поки рахунки не оплачені: замкнене коло і касовий розрив"}, {"t": "До старту домовляємося про проміжне фінансування й закладаємо його вартість у план", "s": "g", "why": "Касовий розрив закритий заздалегідь"}, {"t": "Просимо грантодавця про аванс", "s": "a", "why": "Можливо, але залежить від програми; без запасного плану це ризик"}]}, {"id": "P2", "sys": "fuel", "layer": "grant", "key": false, "title": "Транш прийшов зарано", "text": "Ви отримали транш 20 000 € на техніку, але постачальник переніс поставку на два місяці. Гроші лежать на рахунку. Що робите?", "who": ["finance", "ops"], "options": [{"t": "Хай лежать, витратимо, коли прийде техніка", "s": "c", "why": "За час, поки кошти не використані за призначенням, можуть нарахувати відсотки (§ 49a абз. 4 VwVfG)"}, {"t": "Повідомляємо грантодавця й діємо за його вказівкою; надалі запитуємо гроші лише під найближчі платежі", "s": "g", "why": "Відповідає правилам запиту коштів і обов'язку повідомляти (ANBest-P)"}, {"t": "Тимчасово покриваємо ними інші витрати, потім повернемо", "s": "c", "why": "Нецільове використання веде до відкликання гранту"}]}, {"id": "P3", "sys": "fuel", "layer": "grant", "key": true, "title": "Зник власний внесок", "text": "Програма вимагає 20% власного внеску. За місяць до старту спонсор, який обіцяв 10 000 € цього внеску, відмовився. Що робите?", "who": ["pilot", "finance"], "options": [{"t": "Нічого не кажемо грантодавцю, знайдемо гроші по ходу", "s": "c", "why": "Зміна фінансування підлягає повідомленню, інакше ризик відкликання"}, {"t": "Одразу повідомляємо грантодавця й пропонуємо новий план фінансування", "s": "g", "why": "Прозоро й відповідає обов'язку повідомляти"}, {"t": "Замінюємо внесок годинами волонтерів", "s": "a", "why": "Лише якщо програма визнає негрошовий внесок і грантодавець погодив"}]}, {"id": "P4", "sys": "fuel", "layer": "grant", "key": false, "title": "Ціни зросли", "text": "Техніка коштує на 25% більше, ніж у плані фінансування, зате на рекламу ви витрачаєте на 30% менше. Загальний бюджет не змінюється. Що робите?", "who": ["finance", "ops"], "options": [{"t": "Просто перекидаємо гроші: сума та сама", "s": "a", "why": "Зазвичай окрему статтю можна перевищити лише до 20% за рахунок економії в інших; 25% — понад цю межу"}, {"t": "До покупки просимо грантодавця погодити зміну плану", "s": "g", "why": "Безпечно й задокументовано"}, {"t": "Купуємо дешевшу техніку, навіть якщо вона гірша за ту, що в заявці", "s": "c", "why": "Ризик не досягти мети гранту"}]}, {"id": "P5", "sys": "fuel", "layer": "base", "key": false, "title": "Гроші затримуються", "text": "Очікувані гроші (транш, оплата від клієнта чи партнера) прийдуть на шість тижнів пізніше. Наприкінці місяця — зарплати двом людям. Що робите?", "who": ["pilot", "finance"], "options": [{"t": "Маємо резерв на 2–3 місяці, платимо з нього", "s": "g", "why": "Затримки закладені у фінансовий план"}, {"t": "Тимчасово беремо гроші з іншого проєкту", "s": "c", "why": "Нецільове використання коштів"}, {"t": "Домовляємося з людьми затримати зарплату", "s": "c", "why": "Порушення трудових зобов'язань і ризик втратити команду"}, {"t": "Терміново шукаємо коротку позику", "s": "a", "why": "Працює, але це реакція на пожежу, а не план"}]}, {"id": "C4", "sys": "fuel", "layer": "self", "key": false, "title": "Клієнт платить через 60 днів", "text": "Ви підписали першого великого клієнта. Він платить через 60 днів після виконання робіт, а працювати треба вже зараз. Що робите?", "who": ["pilot", "finance", "comms"], "options": [{"t": "Беремося, якось протягнемо", "s": "c", "why": "Касовий розрив на старті"}, {"t": "Домовляємося про передоплату або поетапну оплату", "s": "g", "why": "Кешфлоу захищений умовами договору"}, {"t": "Беремося: резерв покриває ці 60 днів", "s": "g", "why": "Розрив закладено заздалегідь"}]}, {"id": "C5", "sys": "fuel", "layer": "self", "key": false, "title": "Коли проєкт окупиться?", "text": "Скільки клієнтів чи продажів на місяць вам потрібно, щоб покривати всі витрати?", "who": ["pilot", "finance"], "options": [{"t": "Знаємо число і бачимо, як до нього дійти", "s": "g", "why": "Є точка беззбитковості й план"}, {"t": "Знаємо число, але не знаємо, як до нього дійти", "s": "a", "why": "Немає плану продажів"}, {"t": "Не рахували", "s": "c", "why": "Невідомо, чи модель взагалі може окупитися"}]}, {"id": "D1", "sys": "engines", "layer": "grant", "key": true, "title": "Знижка, якщо підписати зараз", "text": "Ви подали заявку, рішення буде за шість тижнів. Підрядник дає 15% знижки, якщо підписати договір на виконання робіт уже цього тижня. Що робите?", "who": ["pilot", "ops"], "options": [{"t": "Підписуємо, знижка того варта", "s": "c", "why": "Підписання договору на виконання вважається стартом проєкту, а розпочаті проєкти не фінансують (VV Nr. 1.3 до § 44 BHO)"}, {"t": "Чекаємо рішення або письмово просимо погодити дострокований старт", "s": "g", "why": "Грант не під загрозою"}, {"t": "Підписуємо лише договір на планування й підготовку", "s": "a", "why": "Договори на планування зазвичай не вважаються стартом, але межу варто перевірити з грантодавцем"}]}, {"id": "D2", "sys": "engines", "layer": "grant", "key": true, "title": "Купуємо в знайомого", "text": "Грант 60 000 €. Треба замовити дизайн і друк на 8 000 €. Знайомий підприємець зробить швидко. Що робите?", "who": ["ops", "finance"], "options": [{"t": "Замовляємо в знайомого, він надійний", "s": "c", "why": "Немає підтвердження, що вибір конкурентний і економний (ANBest-P Nr. 3.1)"}, {"t": "Збираємо кілька пропозицій, порівнюємо, документуємо вибір", "s": "g", "why": "Для грантів до 100 000 € зазвичай достатньо задокументованого порівняння цін"}, {"t": "Беремо найдешевшу пропозицію з інтернету, нічого не зберігаємо", "s": "a", "why": "Економно, але без документів цього не довести на перевірці"}]}, {"id": "D3", "sys": "engines", "layer": "grant", "key": false, "title": "Великий грант — інші правила", "text": "Грант 150 000 €. Потрібна IT-розробка на 30 000 €. Як обираєте підрядника?", "who": ["ops"], "options": [{"t": "Як завжди: три пропозиції електронною поштою", "s": "a", "why": "Для грантів понад 100 000 € діють правила UVgO, такого порівняння може не вистачити"}, {"t": "Перевіряємо, яку процедуру за UVgO вимагає цей обсяг, і проводимо та документуємо її", "s": "g", "why": "Відповідає вимогам до закупівель у великих грантах"}, {"t": "Беремо постійного підрядника без конкурсу", "s": "c", "why": "Порушення правил закупівель, ризик повернення коштів"}]}, {"id": "D4", "sys": "engines", "layer": "base", "key": false, "title": "Хто за це відповідає?", "text": "Візьміть найважливішу задачу проєкту на наступні три місяці. Хто за неї відповідає і до якого строку?", "who": ["pilot", "ops"], "options": [{"t": "Є план, де записані відповідальні й строки", "s": "g", "why": "Процес керований"}, {"t": "Усі знають, але ніде не записано", "s": "a", "why": "Працює, поки ніхто не захворів і не пішов"}, {"t": "Розберемося по ходу", "s": "c", "why": "Немає планування"}]}, {"id": "N1", "sys": "nav", "layer": "base", "key": false, "title": "Як зрозуміти, що працює?", "text": "Як через шість місяців ви зрозумієте, що проєкт працює?", "who": ["pilot", "ops"], "options": [{"t": "Є 2–3 вимірювані показники з цільовими значеннями", "s": "g", "why": "Успіх можна виміряти"}, {"t": "Є загальні цілі, але без цифр", "s": "a", "why": "Важко довести результат собі й іншим"}, {"t": "Побачимо", "s": "c", "why": "Немає критеріїв успіху"}]}, {"id": "N2", "sys": "nav", "layer": "base", "key": false, "title": "Хто збирає дані?", "text": "Хто і як часто збирає дані про ці показники?", "who": ["ops"], "options": [{"t": "Є відповідальний і регулярність, наприклад раз на місяць", "s": "g", "why": "Прогрес видно вчасно"}, {"t": "Зберемо все наприкінці проєкту", "s": "a", "why": "Проблеми помітите, коли вже пізно щось змінити"}, {"t": "Ніхто", "s": "c", "why": "Даних не буде"}]}, {"id": "N3", "sys": "nav", "layer": "grant", "key": false, "title": "Учасників менше, ніж планували", "text": "У заявці ви обіцяли 200 учасників, а прийшло 120. Скоро звіт. Що робите?", "who": ["pilot", "ops"], "options": [{"t": "Пишемо 200, ніхто не перевірятиме", "s": "c", "why": "Недостовірні дані у звіті — підстава вимагати гроші назад"}, {"t": "Чесно показуємо 120 і пояснюємо причини; грантодавця повідомили, щойно побачили відхилення", "s": "g", "why": "У змістовному звіті результати порівнюють з планом, і пояснення відхилень — нормальна частина звіту"}, {"t": "Показуємо 120 без пояснень", "s": "a", "why": "Чесно, але без пояснень грантодавець може засумніватися в результаті"}]}, {"id": "CH1", "sys": "box", "layer": "base", "key": false, "title": "Загублений чек", "text": "Волонтер оплатив закупівлю для проєкту на 340 € своєю карткою і загубив чек. Він просить компенсацію. Що робите?", "who": ["finance", "pilot"], "options": [{"t": "Компенсуємо, ми йому довіряємо", "s": "c", "why": "Витрата без документа: її не можна показати ні у звіті, ні в обліку"}, {"t": "Діємо за правилом: компенсуємо лише за документом, а дублікат просимо в продавця", "s": "g", "why": "Є правило і спосіб урятувати ситуацію"}, {"t": "Просимо дублікат, але загального правила немає", "s": "a", "why": "Цей випадок урятуємо, але наступний повториться"}]}, {"id": "CH2", "sys": "box", "layer": "grant", "key": true, "title": "Коли подавати звіт?", "text": "Період фінансування й сам проєкт завершилися 31 березня. До якого строку треба подати звіт про використання коштів?", "who": ["pilot", "finance"], "options": [{"t": "Коли грантодавець нагадає", "s": "c", "why": "Строк встановлений правилами, і нагадування може не бути"}, {"t": "До 30 вересня, якщо в рішенні не вказано коротшого строку", "s": "g", "why": "Не пізніше кінця шостого місяця після періоду фінансування (ANBest-P Nr. 6.1)"}, {"t": "До кінця наступного року", "s": "c", "why": "Строк пропущено"}]}, {"id": "CH3", "sys": "box", "layer": "grant", "key": false, "title": "Що входить у звіт?", "text": "З чого складається звіт про використання коштів?", "who": ["pilot", "finance", "comms"], "options": [{"t": "Таблиця витрат", "s": "a", "why": "Це лише половина звіту"}, {"t": "Змістовний звіт про виконання й результати плюс фінансовий звіт за статтями плану", "s": "g", "why": "Саме з цих двох частин складається звіт (ANBest-P Nr. 6.2)"}, {"t": "Фото з заходів і пости в соцмережах", "s": "c", "why": "Це може бути додатком, але не звітом"}]}, {"id": "CH4", "sys": "box", "layer": "grant", "key": false, "title": "Звіт прийняли — можна прибирати?", "text": "Грантодавець прийняв ваш звіт. Що робите з чеками, договорами й іншими документами проєкту?", "who": ["finance"], "options": [{"t": "Можна викидати, все вже перевірили", "s": "c", "why": "Документи можуть знадобитися для подальших перевірок"}, {"t": "Зберігаємо щонайменше п'ять років після звіту, якщо рішення не вимагає довше", "s": "g", "why": "Так вимагають, наприклад, ANBest-P Гессену; податкові строки можуть бути довшими"}, {"t": "Зберігаємо до кінця року", "s": "c", "why": "Занадто короткий строк"}]}, {"id": "W1", "sys": "weather", "layer": "base", "key": false, "title": "Три головні ризики", "text": "Назвіть три головні ризики вашого проєкту. Що ви з ними робите?", "who": ["pilot"], "options": [{"t": "Маємо список ризиків і план дій для кожного", "s": "g", "why": "Ризики під контролем"}, {"t": "Знаємо, але плану немає", "s": "a", "why": "Ризики усвідомлені, але не керовані"}, {"t": "Не думали про це", "s": "c", "why": "Ризики невідомі"}]}, {"id": "W2", "sys": "weather", "layer": "grant", "key": false, "title": "Мета під загрозою", "text": "Ви втратили приміщення, і стало ясно, що мету гранту в повному обсязі досягти не вийде. Що робите?", "who": ["pilot"], "options": [{"t": "Мовчимо й робимо, що можемо", "s": "c", "why": "Якщо мету не досягнуто, грант можуть відкликати, а мовчання підсилює ризик"}, {"t": "Одразу повідомляємо грантодавця й пропонуємо, як змінити план", "s": "g", "why": "Обов'язок повідомляти виконано, і є шанс зберегти фінансування"}, {"t": "Скажемо у звіті", "s": "c", "why": "Занадто пізно щось змінити"}]}, {"id": "W3", "sys": "weather", "layer": "base", "key": false, "title": "Головне джерело зникло", "text": "Один партнер (грантодавець, клієнт чи спонсор) дає 80% вашого бюджету й вирішив не продовжувати. Що відбувається?", "who": ["pilot", "finance"], "options": [{"t": "У нас кілька джерел, жодне не більше половини бюджету", "s": "g", "why": "Проєкт не залежить від одного джерела"}, {"t": "Почнемо шукати нові джерела", "s": "a", "why": "Можливо, але це займе місяці"}, {"t": "Проєкт закриється", "s": "c", "why": "Критична залежність від одного джерела"}]}, {"id": "Z1", "sys": "ground", "layer": "base", "key": false, "title": "Хто ваші стейкхолдери?", "text": "Хто ваші ключові партнери й стейкхолдери, і хто з команди відповідає за спілкування з ними?", "who": ["pilot", "comms"], "options": [{"t": "Є список і відповідальний за кожного", "s": "g", "why": "Зв'язок керований"}, {"t": "Знаємо, але спілкуємось хаотично", "s": "a", "why": "Ризик загубити важливі контакти"}, {"t": "Не визначали", "s": "c", "why": "Немає роботи зі стейкхолдерами"}]}, {"id": "Z2", "sys": "ground", "layer": "grant", "key": false, "title": "Грантодавець питає, а у вас затримка", "text": "Грантодавець просить проміжну інформацію, а у вас затримка з однією частиною проєкту. Що робите?", "who": ["pilot", "comms"], "options": [{"t": "Відповімо, коли буде гарна новина", "s": "c", "why": "Мовчання руйнує довіру й порушує обов'язок повідомляти"}, {"t": "Відповідаємо вчасно й чесно, разом із планом, як надолужимо", "s": "g", "why": "Прозорість зберігає довіру"}, {"t": "Відповідає той, хто вільний, без узгодження з командою", "s": "a", "why": "Ризик суперечливої інформації"}]}, {"id": "Z3", "sys": "ground", "layer": "base", "key": false, "title": "Як про вас дізнаються?", "text": "Як цільова аудиторія дізнається про ваш проєкт?", "who": ["comms"], "options": [{"t": "Є канали, план і люди чи бюджет на це", "s": "g", "why": "Охоплення сплановане"}, {"t": "Соцмережі, як вийде", "s": "a", "why": "Охоплення випадкове"}, {"t": "Самі прийдуть", "s": "c", "why": "Немає плану комунікації"}]}]};
+(function(){
+"use strict";
+const SYS = Object.fromEntries(DATA.systems.map(s=>[s.id,s]));
+const ROLE = Object.fromEntries(DATA.roles.map(r=>[r.id,r]));
+const PROF = Object.fromEntries(DATA.profiles.map(p=>[p.id,p]));
+const ORG = Object.fromEntries(DATA.orgtypes.map(o=>[o.id,o]));
+const SCORE = {g:1,a:.5,c:0,u:0};
+const STATUS = {g:"Готово",a:"Частково",c:"Бракує",u:"Не знаю"};
+const JOURNAL = {g:"Правильний хід.",a:"Частково.",c:"Ризиковано."};
+const CFG = window.AYRUP_CONFIG || {};
+const REMOTE = !!(CFG.supabaseUrl && CFG.supabaseAnonKey);
+
+/* ---------- helpers ---------- */
+const $ = s => document.querySelector(s);
+const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const uid = () => (crypto.randomUUID ? crypto.randomUUID() : "x"+Math.random().toString(36).slice(2)+Date.now().toString(36));
+const pct = x => Math.round(x*100);
+const tone = x => x==null ? "n" : x>=.75 ? "g" : x>=.45 ? "a" : "c";
+const colorVar = t => ({g:"var(--green)",a:"var(--amber)",c:"var(--coral)",n:"var(--line)",u:"var(--line)"}[t]);
+function toast(msg){const t=$("#toast");t.textContent=msg;t.hidden=false;clearTimeout(toast.t);toast.t=setTimeout(()=>t.hidden=true,2600)}
+function store(k,v){try{ if(v===undefined) return JSON.parse(localStorage.getItem(k)||"null"); localStorage.setItem(k,JSON.stringify(v)); }catch(e){ return null }}
+const session = {
+  get(){ return store("ayrup.session") || {pilot:null, members:{}, drafts:{}} },
+  set(s){ store("ayrup.session", s) }
+};
+
+/* ---------- which situations a profile plays ---------- */
+function situationsFor(profile){
+  return DATA.situations.filter(s=>{
+    if(s.layer==="base") return true;
+    if(s.layer==="grant") return profile==="A" || ((profile==="B"||profile==="V") && s.key);
+    if(s.layer==="self") return profile==="G" || profile==="V";
+    return false;
+  });
+}
+const isLearning = (s,profile) => s.layer==="grant" && (profile==="B"||profile==="V");
+
+/* ---------- storage: local (demo) and remote (Supabase RPC) ---------- */
+const Local = {
+  db(){ return store("ayrup.db") || {leads:{}, flights:{}, members:{}} },
+  save(d){ store("ayrup.db", d) },
+  async register(p){ const d=this.db(); const id=uid(), token=uid(); d.leads[token]={id,token,...p,source:"pilot",created:Date.now()}; this.save(d); return {token} },
+  async createFlight(token,f){ const d=this.db(); const lead=d.leads[token]; if(!lead) throw new Error("Сесію не знайдено, зареєструйтесь ще раз");
+    const id=uid(); const now=Date.now();
+    d.flights[id]={id,pilot:token,...f,created:now,deadline:now+f.window*3600e3,closed:false};
+    const mt=uid(); d.members[mt]={token:mt,flight:id,name:lead.name,role:f.pilotRole,pilot:true,answers:null,finished:null,lead:token};
+    this.save(d); return {flightId:id, memberToken:mt} },
+  async listFlights(token){ const d=this.db(); return Object.values(d.flights).filter(f=>f.pilot===token).sort((a,b)=>b.created-a.created).map(f=>this._pub(d,f)) },
+  _pub(d,f){ const ms=Object.values(d.members).filter(m=>m.flight===f.id); const pilot=d.leads[f.pilot];
+    return {id:f.id,project:f.project,profile:f.profile,orgtype:f.orgtype,crewSize:f.crewSize,deadline:f.deadline,closed:f.closed,pilotName:pilot?pilot.name:"",
+      members:ms.map(m=>({name:m.name,role:m.role,pilot:m.pilot,finished:!!m.finished}))} },
+  async flight(id){ const d=this.db(); const f=d.flights[id]; if(!f) throw new Error("Рейс не знайдено. Перевірте посилання."); return this._pub(d,f) },
+  async join(id,p){ const d=this.db(); if(!d.flights[id]) throw new Error("Рейс не знайдено. Перевірте посилання.");
+    const lt=uid(); d.leads[lt]={token:lt,name:p.name,email:p.email,consent:p.consent,source:"crew",created:Date.now()};
+    const mt=uid(); d.members[mt]={token:mt,flight:id,name:p.name,role:p.role,pilot:false,answers:null,finished:null,lead:lt}; this.save(d); return {memberToken:mt} },
+  async submit(mt,answers){ const d=this.db(); const m=d.members[mt]; if(!m) throw new Error("Учасника не знайдено"); m.answers=answers; m.finished=Date.now(); this.save(d); return true },
+  async close(token,id){ const d=this.db(); const f=d.flights[id]; if(f&&f.pilot===token){f.closed=true;this.save(d)} return true },
+  async results(id,token){ const d=this.db(); const f=d.flights[id]; if(!f) throw new Error("Рейс не знайдено");
+    const allowed = f.pilot===token || Object.values(d.members).some(m=>m.flight===id && m.token===token);
+    if(!allowed) throw new Error("Немає доступу до результатів цього рейсу");
+    const ms=Object.values(d.members).filter(m=>m.flight===id);
+    const done=ms.filter(m=>m.finished).length;
+    const unlocked = f.closed || Date.now()>f.deadline || done>=f.crewSize;
+    return {flight:this._pub(d,f), unlocked, members: unlocked ? ms.filter(m=>m.finished).map(m=>({name:m.name,role:m.role,pilot:m.pilot,answers:m.answers})) : []} },
+  async expert(token,id,msg){ const d=this.db(); if(d.leads[token]){d.leads[token].wantsExpert={flight:id,msg,at:Date.now()}; this.save(d)} return true },
+  async demoCrew(id){ const d=this.db(); const f=d.flights[id]; const sits=situationsFor(f.profile);
+    const people=[["Олена","finance",.75],["Максим","ops",.45],["Ірина","comms",.6]].slice(0,Math.max(1,f.crewSize-1));
+    for(const [name,role,skill] of people){ const mt=uid(); const answers={};
+      for(const s of sits){ const r=Math.random(); let idx;
+        if(r<.12){ answers[s.id]={o:-1,ask:pick(["role:finance","giver","expert","none"])}; continue }
+        const good=s.options.findIndex(o=>o.s==="g"), mid=s.options.findIndex(o=>o.s==="a"), bad=s.options.findIndex(o=>o.s==="c");
+        idx = r<skill ? good : (r<skill+.2 && mid>=0 ? mid : (bad>=0?bad:good));
+        answers[s.id]={o:idx} }
+      d.members[mt]={token:mt,flight:id,name,role,pilot:false,answers,finished:Date.now(),lead:null} }
+    this.save(d); return true }
+};
+function pick(a){return a[Math.floor(Math.random()*a.length)]}
+const Remote = {
+  async rpc(fn,args){ const r=await fetch(CFG.supabaseUrl.replace(/\/$/,"")+"/rest/v1/rpc/"+fn,{method:"POST",headers:Object.assign({"Content-Type":"application/json",apikey:CFG.supabaseAnonKey}, CFG.supabaseAnonKey.startsWith("eyJ")?{Authorization:"Bearer "+CFG.supabaseAnonKey}:{}),body:JSON.stringify(args)});
+    const t=await r.text(); let j=null; try{j=t?JSON.parse(t):null}catch(e){}
+    if(!r.ok) throw new Error((j&&(j.message||j.hint))||"Сервер не відповів. Спробуйте ще раз за хвилину."); return j },
+  async register(p){ return this.rpc("ayrup_register",{p_name:p.name,p_email:p.email,p_org:p.org||"",p_consent:p.consent}) },
+  async createFlight(token,f){ return this.rpc("ayrup_create_flight",{p_token:token,p_project:f.project,p_profile:f.profile,p_orgtype:f.orgtype,p_role:f.pilotRole,p_window:f.window,p_crew_size:f.crewSize}) },
+  async listFlights(token){ return this.rpc("ayrup_list_flights",{p_token:token}) },
+  async flight(id){ const f=await this.rpc("ayrup_flight_public",{p_flight:id}); if(!f) throw new Error("Рейс не знайдено. Перевірте посилання."); return f },
+  async join(id,p){ return this.rpc("ayrup_join",{p_flight:id,p_name:p.name,p_email:p.email,p_role:p.role,p_consent:p.consent}) },
+  async submit(mt,answers){ return this.rpc("ayrup_submit",{p_member_token:mt,p_answers:answers}) },
+  async close(token,id){ return this.rpc("ayrup_close_flight",{p_token:token,p_flight:id}) },
+  async results(id,token){ return this.rpc("ayrup_results",{p_flight:id,p_token:token}) },
+  async expert(token,id,msg){ return this.rpc("ayrup_request_expert",{p_token:token,p_flight:id,p_message:msg}) },
+  async demoCrew(){ throw new Error("Тестовий екіпаж доступний лише в демо-режимі") }
+};
+const API = REMOTE ? Remote : Local;
+
+/* ---------- router ---------- */
+const routes = {};
+function go(name){ if(location.hash.slice(1)===name) render(); else location.hash = name }
+function current(){ const h=location.hash.slice(1)||"start"; const m=h.match(/^(flight|join|play|results)-(.+)$/); return m ? {name:m[1],id:m[2]} : {name:h} }
+async function render(){
+  const r=current(); const fn=routes[r.name]||routes.start; const app=$("#app");
+  renderNav(); app.innerHTML=""; window.scrollTo(0,0);
+  try{ await fn(app,r.id) }catch(e){ app.innerHTML=`<div class="wrap"><div class="panel stack"><h2>Щось пішло не так</h2><p>${esc(e.message)}</p><button class="btn" data-go="start">На головну</button></div></div>` }
+  app.focus({preventScroll:true});
+}
+document.addEventListener("click",e=>{ const g=e.target.closest("[data-go]"); if(g){ e.preventDefault(); go(g.dataset.go) } });
+window.addEventListener("hashchange",render);
+function renderNav(){ const s=session.get(); $("#nav").innerHTML = s.pilot ? `<button class="btn ghost small" data-go="cabinet">Мої рейси</button>` : `<button class="btn ghost small" data-go="register">Почати як пілот</button>` }
+$("#banner").innerHTML = REMOTE ? "" : `<div class="banner">Демо-режим: дані зберігаються лише в цьому браузері. Щоб протестувати з екіпажем на різних пристроях, підключіть базу даних (див. README).</div>`;
+
+/* ---------- pieces ---------- */
+const PLANE = `<svg class="plane" viewBox="0 0 34 34" aria-hidden="true"><circle cx="17" cy="17" r="16" fill="var(--raised)" stroke="var(--ink)" stroke-width="2"/><path d="M9 18.5l6-1.2 4.6-6.3c.5-.7 1.6-.8 2.1 0 .3.4.3 1 0 1.4l-2.9 5.3 5.2.3 1.6-1.9h1.6l-1 3.4 1 3.4h-1.6l-1.6-1.9-5.2.3 2.9 5.3c.3.4.3 1 0 1.4-.5.8-1.6.7-2.1 0l-4.6-6.3-6-1.2z" fill="var(--ink)"/></svg>`;
+function runway(x){ const p=Math.max(0,Math.min(1,x)); return `<div class="runway" role="img" aria-label="${pct(p)}%"><div class="fill" style="width:${p*100}%;--full:${p>0?100/p:100}%"></div><div style="left:${p*100}%" class="plane">${PLANE}</div></div>` }
+function lights(){ return `<span class="lights" aria-hidden="true"><i style="background:var(--coral)"></i><i style="background:var(--amber)"></i><i style="background:var(--green)"></i></span>` }
+function gauge(name,v){ const t=tone(v); const a=Math.PI*(v??0); const x=60-50*Math.cos(a), y=60-50*Math.sin(a);
+  const arc = v>0 ? `<path d="M10 60 A50 50 0 0 1 ${x.toFixed(1)} ${y.toFixed(1)}" fill="none" stroke="${colorVar(t)}" stroke-width="12" stroke-linecap="round"/>` : "";
+  return `<div class="gauge"><svg viewBox="0 0 120 70" aria-hidden="true"><path d="M10 60 A50 50 0 0 1 110 60" fill="none" stroke="var(--sunken)" stroke-width="12" stroke-linecap="round"/>${arc}</svg><span class="pct">${v==null?"—":pct(v)+"%"}</span><b>${esc(name)}</b></div>` }
+function choiceBtn(value,title,desc,pressed){ return `<button type="button" class="choice" data-v="${esc(value)}" aria-pressed="${pressed?"true":"false"}"><span class="dot"></span><span><b>${esc(title)}</b>${desc?`<span class="muted">${esc(desc)}</span>`:""}</span></button>` }
+function bindChoices(root,onPick){ root.querySelectorAll(".choice").forEach(b=>b.addEventListener("click",()=>{ root.querySelectorAll(".choice").forEach(x=>x.setAttribute("aria-pressed","false")); b.setAttribute("aria-pressed","true"); onPick(b.dataset.v) })) }
+const consentText = "Погоджуюсь, що ayrup зберігатиме моє ім'я та пошту, щоб показати результати гри й зв'язатися щодо тестування.";
+function shareLink(id){ return location.href.split("#")[0]+"#join-"+id }
+
+/* ---------- screens ---------- */
+routes.start = app => {
+  app.innerHTML = `<div class="wrap wide">
+  <section class="hero">
+    <div>${lights()}</div>
+    <h1>Проживіть свій проєкт до того, як витратите перший євро</h1>
+    <p class="lead">ayrup — гра-симулятор для НГО, ініціатив і малого бізнесу. Кожен у команді окремо проходить реальні ситуації проєкту, а наприкінці ви бачите, наскільки готові до зльоту і чого саме бракує.</p>
+    <div style="max-width:560px" class="reveal">${runway(.7)}<p class="small muted" style="margin-top:10px">Так виглядає результат: готовність 70% і чесний список того, що закриває решту.</p></div>
+    <div><button class="btn" data-go="register">Почати як пілот</button></div>
+  </section>
+  <div class="steps">
+    <div><span class="n">1</span><b>Запустіть рейс</b>Опишіть проєкт і як плануєте його фінансувати: грантом, власним коштом чи ще не знаєте.</div>
+    <div><span class="n">2</span><b>Запросіть екіпаж</b>Надішліть посилання людям, які реалізовуватимуть проєкт. Кожен грає сам, у зручний час, протягом 24–48 годин.</div>
+    <div><span class="n">3</span><b>Отримайте результат</b>Відсоток готовності, узгодженість команди, карта компетенцій і рекомендований маршрут фінансування.</div>
+  </div>
+  <h3>Вісім систем, які перевіряємо перед вильотом</h3>
+  <ul class="systems">${DATA.systems.map(s=>`<li title="${esc(s.desc)}">${esc(s.name)}</li>`).join("")}</ul>
+  <footer>Методологія спирається на наукові дослідження, відкриті рамки оцінки та німецьке грантове право. Результат гри — орієнтир для команди, а не юридична чи фінансова консультація.</footer>
+  </div>` };
+
+routes.register = app => {
+  const s=session.get(); if(s.pilot){ go("cabinet"); return }
+  app.innerHTML = `<div class="wrap"><h2>Реєстрація пілота</h2><p class="muted">Пілот — людина, яка запускає рейс і запрошує команду. Зазвичай це засновник, керівник або координатор проєкту.</p>
+  <form class="panel stack" id="f" novalidate>
+    <label class="field">Ім'я<input type="text" name="name" autocomplete="name" required></label>
+    <label class="field">Електронна пошта<input type="email" name="email" autocomplete="email" required></label>
+    <label class="field">Організація або проєкт<span class="hint">Необов'язково</span><input type="text" name="org" autocomplete="organization"></label>
+    <label class="check"><input type="checkbox" name="consent"> <span>${consentText}</span></label>
+    <p class="err" id="err" aria-live="polite"></p>
+    <button class="btn" type="submit">Зареєструватися</button>
+  </form></div>`;
+  $("#f").addEventListener("submit",async e=>{ e.preventDefault(); const f=new FormData(e.target);
+    const p={name:f.get("name").trim(),email:f.get("email").trim(),org:f.get("org").trim(),consent:!!f.get("consent")};
+    const err=$("#err");
+    if(!p.name) return err.textContent="Вкажіть ім'я.";
+    if(!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(p.email)) return err.textContent="Вкажіть пошту у форматі name@example.com.";
+    if(!p.consent) return err.textContent="Без згоди ми не можемо зберегти результати гри.";
+    e.target.querySelector("button").disabled=true;
+    try{ const r=await API.register(p); const ss=session.get(); ss.pilot={token:r.token,name:p.name,email:p.email}; session.set(ss); go("new") }
+    catch(x){ err.textContent=x.message; e.target.querySelector("button").disabled=false } }) };
+
+routes.cabinet = async app => {
+  const s=session.get(); if(!s.pilot){ go("register"); return }
+  const flights = await API.listFlights(s.pilot.token) || [];
+  app.innerHTML = `<div class="wrap"><h2>Вітаємо, ${esc(s.pilot.name)}</h2>
+  <div class="panel"><div style="display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap"><h3 style="margin:0">Мої рейси</h3><button class="btn small" data-go="new">Новий рейс</button></div>
+  ${flights.length ? flights.map(f=>{ const done=f.members.filter(m=>m.finished).length;
+    return `<div class="flight-row"><div><b>${esc(f.project)}</b><div class="small muted">${esc(PROF[f.profile]?.name||"")} · завершили ${done} з ${f.crewSize}</div></div><button class="btn ghost small" data-go="flight-${esc(f.id)}">Відкрити</button></div>` }).join("")
+  : `<p class="muted" style="margin-top:16px">Тут з'являться ваші рейси. Створіть перший, щоб запросити команду.</p>`}
+  </div>
+  <p class="small muted" style="margin-top:20px">Увійшли як ${esc(s.pilot.email)}. <button class="linkbtn" id="out">Вийти</button></p></div>`;
+  $("#out").onclick=()=>{ const ss=session.get(); ss.pilot=null; session.set(ss); go("start") } };
+
+routes.new = app => {
+  const s=session.get(); if(!s.pilot){ go("register"); return }
+  const st={project:"",orgtype:null,profile:null,pilotRole:"pilot",crewSize:3,window:48};
+  app.innerHTML = `<div class="wrap"><h2>Новий рейс</h2><p class="muted">Чотири короткі питання, і ви отримаєте посилання для екіпажу.</p>
+  <div class="stack">
+   <label class="field">Назва проєкту<input type="text" id="project" placeholder="Наприклад, Мовне кафе для новоприбулих"></label>
+   <div><h3>Хто запускає проєкт?</h3><div class="choices grid2" id="org">${DATA.orgtypes.map(o=>choiceBtn(o.id,o.name,o.desc)).join("")}</div></div>
+   <div><h3>Як плануєте фінансувати?</h3><p class="small muted">Від цього залежать ситуації в грі. Якщо не впевнені — оберіть «Ще не знаємо»: гра допоможе розібратися.</p><div class="choices grid2" id="prof">${DATA.profiles.map(p=>choiceBtn(p.id,p.name,p.desc)).join("")}</div></div>
+   <div><h3>Ваша роль у проєкті</h3><div class="choices grid2" id="role">${DATA.roles.map(r=>choiceBtn(r.id,r.name,r.desc,r.id==="pilot")).join("")}</div></div>
+   <div class="grid2">
+    <label class="field">Скільки людей в екіпажі, разом з вами<select id="crew">${[1,2,3,4,5,6,7,8].map(n=>`<option ${n===3?"selected":""}>${n}</option>`).join("")}</select></label>
+    <label class="field">Скільки часу дати екіпажу<select id="win"><option value="24">24 години</option><option value="48" selected>48 годин</option></select></label>
+   </div>
+   <p class="small muted">Порада: попросіть команду не обговорювати відповіді до кінця гри. Найцінніше в результатах — чесні й незалежні думки кожного.</p>
+   <p class="err" id="err" aria-live="polite"></p>
+   <button class="btn" id="go">Створити рейс</button>
+  </div></div>`;
+  bindChoices($("#org"),v=>st.orgtype=v); bindChoices($("#prof"),v=>st.profile=v); bindChoices($("#role"),v=>st.pilotRole=v);
+  $("#go").onclick=async()=>{ st.project=$("#project").value.trim(); st.crewSize=+$("#crew").value; st.window=+$("#win").value; const err=$("#err");
+    if(!st.project) return err.textContent="Вкажіть назву проєкту.";
+    if(!st.orgtype) return err.textContent="Оберіть, хто запускає проєкт.";
+    if(!st.profile) return err.textContent="Оберіть спосіб фінансування.";
+    $("#go").disabled=true;
+    try{ const r=await API.createFlight(s.pilot.token,st); const ss=session.get(); ss.members[r.flightId]=r.memberToken; session.set(ss); go("flight-"+r.flightId) }
+    catch(x){ err.textContent=x.message; $("#go").disabled=false } } };
+
+routes.flight = async (app,id) => {
+  const s=session.get(); const f=await API.flight(id); const isPilot=!!s.pilot;
+  const myToken=s.members[id]; const me=f.members.find(m=>m.pilot);
+  const done=f.members.filter(m=>m.finished).length; const left=Math.max(0,f.deadline-Date.now());
+  const myDone = myToken && (session.get().done||{})[id];
+  app.innerHTML = `<div class="wrap"><p class="small muted"><button class="linkbtn" data-go="cabinet">Мої рейси</button></p>
+  <h2>${esc(f.project)}</h2><p class="muted">${esc(PROF[f.profile]?.name)} · ${esc(ORG[f.orgtype]?.name||"")}</p>
+  <div class="stack">
+   <div class="panel"><h3>Ваш політ</h3>${myDone?`<p>Ви завершили свій політ. Дякуємо!</p>`:`<p>Пройдіть гру самі. Займе ${Math.round(situationsFor(f.profile).length*0.6)}–${situationsFor(f.profile).length} хвилин.</p><button class="btn" data-go="play-${esc(id)}">Почати свій політ</button>`}</div>
+   <div class="panel"><h3>Запросіть екіпаж</h3><p class="small muted">Надішліть це посилання людям, які реалізовуватимуть проєкт. Кожен обере свою роль і пройде гру окремо.</p>
+    <div class="copy"><input type="text" readonly value="${esc(shareLink(id))}" id="link" aria-label="Посилання для екіпажу"><button class="btn small" id="cp">Копіювати</button></div></div>
+   <div class="panel"><h3>Екіпаж: завершили ${done} з ${f.crewSize}</h3>
+    <ul class="crew">${f.members.map(m=>`<li><span>${esc(m.name)}${m.pilot?" (пілот)":""} <span class="muted small">· ${esc(ROLE[m.role]?.name||m.role)}</span></span><span class="tag ${m.finished?"g":"n"}">${m.finished?"Завершено":"Ще в польоті"}</span></li>`).join("")}</ul>
+    <p class="small muted" style="margin-top:12px">${f.closed||left===0?"Рейс завершено.":"До кінця вікна: "+Math.ceil(left/3600e3)+" год. Результати відкриються, коли завершать усі або сплине час."}</p>
+    <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:12px">
+     <button class="btn ghost small" data-go="results-${esc(id)}">Результати</button>
+     ${isPilot&&!f.closed?`<button class="btn ghost small" id="close">Завершити рейс зараз</button>`:""}
+     ${!REMOTE&&isPilot?`<button class="btn ghost small" id="demo">Додати тестовий екіпаж</button>`:""}
+    </div></div>
+  </div></div>`;
+  $("#cp").onclick=async()=>{ try{ await navigator.clipboard.writeText($("#link").value); toast("Посилання скопійовано") }catch(e){ $("#link").select(); toast("Виділіть і скопіюйте посилання") } };
+  const c=$("#close"); if(c) c.onclick=async()=>{ if(!confirm("Завершити рейс? Результати відкриються одразу, навіть якщо не всі пройшли гру.")) return; await API.close(s.pilot.token,id); render() };
+  const d=$("#demo"); if(d) d.onclick=async()=>{ await API.demoCrew(id); toast("Тестовий екіпаж пройшов гру"); render() } };
+
+routes.join = async (app,id) => {
+  const f=await API.flight(id); const s=session.get();
+  if(s.members[id]){ go("play-"+id); return }
+  let role=null;
+  app.innerHTML = `<div class="wrap"><div style="margin-bottom:18px">${lights()}</div><h2>${esc(f.pilotName)} запрошує вас у рейс «${esc(f.project)}»</h2>
+  <p>ayrup — гра, у якій команда наперед проживає свій проєкт. Ви пройдете реальні ситуації й оберете, як би діяли. Відповідайте самостійно й чесно: правильні відповіді ви побачите разом з усією командою наприкінці.</p>
+  <form class="panel stack" id="f" novalidate>
+   <label class="field">Ім'я<input type="text" name="name" autocomplete="name"></label>
+   <label class="field">Електронна пошта<input type="email" name="email" autocomplete="email"></label>
+   <div><b>Ваша роль у проєкті</b><div class="choices grid2" id="role" style="margin-top:8px">${DATA.roles.filter(r=>r.id!=="pilot").map(r=>choiceBtn(r.id,r.name,r.desc)).join("")}</div></div>
+   <label class="check"><input type="checkbox" name="consent"> <span>${consentText}</span></label>
+   <p class="err" id="err" aria-live="polite"></p>
+   <button class="btn" type="submit">Приєднатися до рейсу</button>
+  </form></div>`;
+  bindChoices($("#role"),v=>role=v);
+  $("#f").addEventListener("submit",async e=>{ e.preventDefault(); const fd=new FormData(e.target); const err=$("#err");
+    const p={name:fd.get("name").trim(),email:fd.get("email").trim(),role,consent:!!fd.get("consent")};
+    if(!p.name) return err.textContent="Вкажіть ім'я.";
+    if(!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(p.email)) return err.textContent="Вкажіть пошту у форматі name@example.com.";
+    if(!p.role) return err.textContent="Оберіть свою роль.";
+    if(!p.consent) return err.textContent="Без згоди ми не можемо зберегти ваші відповіді.";
+    try{ const r=await API.join(id,p); const ss=session.get(); ss.members[id]=r.memberToken; ss.crewName=p.name; session.set(ss); go("play-"+id) }catch(x){ err.textContent=x.message } }) };
+
+routes.play = async (app,id) => {
+  const s=session.get(); const mt=s.members[id]; if(!mt){ go("join-"+id); return }
+  if((s.done||{})[id]){ go("results-"+id); return }
+  const f=await API.flight(id); const sits=situationsFor(f.profile);
+  const draft = s.drafts[id] || {i:-1,answers:{}};
+  const save=()=>{ const ss=session.get(); ss.drafts[id]=draft; session.set(ss) };
+  const learning = f.profile==="B"||f.profile==="V";
+  const roleOptions = DATA.roles.filter(r=>r.id!=="other");
+  function intro(){
+    app.innerHTML = `<div class="wrap"><div style="margin-bottom:16px">${lights()}</div><h2>Передпольотний інструктаж</h2>
+     <div class="stack"><p>Попереду ${sits.length} ситуацій вашого проєкту «${esc(f.project)}». Кожна — це рішення, яке колись доведеться ухвалити.</p>
+     <p>Обирайте те, що зробили б насправді, а не те, що «правильно». Якщо не знаєте — так і скажіть: чесна прогалина корисніша за вгадану відповідь.</p>
+     ${learning?`<p>Частину ситуацій про грантові правила ви проходите в навчальному режимі: одразу після відповіді побачите, що вимагає правило. Ці відповіді не знижують загальної готовності проєкту.</p>`:""}
+     <p>Прогрес зберігається, тож можна зробити перерву.</p>
+     <button class="btn" id="start">${draft.i>=0?"Продовжити":"Злітаємо"}</button></div></div>`;
+    $("#start").onclick=()=>{ if(draft.i<0) draft.i=0; save(); step() } }
+  function step(){
+    const s=sits[draft.i]; const a=draft.answers[s.id]||null; const learn=isLearning(s,f.profile);
+    const done=Object.keys(draft.answers).length;
+    app.innerHTML = `<div class="wrap"><div class="playhead"><div class="playmeta"><span class="sysname">${esc(SYS[s.sys].name)}</span><span>${draft.i+1} з ${sits.length}</span></div>${runway(done/sits.length)}</div>
+     <section class="sit"><h2>${esc(s.title)}</h2>${learn?`<p><span class="tag a">Навчальний режим</span></p>`:""}<p class="text">${esc(s.text)}</p>
+      <div class="choices" id="ch">${s.options.map((o,k)=>choiceBtn(k,o.t,"",a&&a.o===k)).join("")}
+       <button type="button" class="choice dunno" data-v="-1" aria-pressed="${a&&a.o===-1?"true":"false"}"><span class="dot"></span><span><b>Не знаю, спитаю…</b><span class="muted">Оберіть, до кого звернулися б</span></span></button></div>
+      <div id="asks"></div><div id="journal" aria-live="polite"></div>
+      <div class="navrow"><button class="btn ghost small" id="back" ${draft.i===0?"disabled":""}>Назад</button><button class="btn" id="next" disabled>${draft.i===sits.length-1?"Завершити політ":"Далі"}</button></div>
+     </section></div>`;
+    const next=$("#next");
+    const ready=()=>{ const x=draft.answers[s.id]; next.disabled=!(x&&(x.o>=0||x.ask)) };
+    function showAsks(){ const x=draft.answers[s.id]; if(!x||x.o!==-1){ $("#asks").innerHTML=""; return }
+      const opts=[...roleOptions.map(r=>["role:"+r.id,r.id==="pilot"?"Пілота":r.name]),["giver","Грантодавця"],["expert","Зовнішнього експерта"],["none","Не знаю, кого"]];
+      $("#asks").innerHTML=`<div class="asks" role="group" aria-label="До кого звернетеся">${opts.map(([v,l])=>`<button type="button" class="chip" data-a="${v}" aria-pressed="${x.ask===v}">${esc(l)}</button>`).join("")}</div>`;
+      $("#asks").querySelectorAll(".chip").forEach(c=>c.onclick=()=>{ x.ask=c.dataset.a; save(); showAsks(); ready(); journal() }) }
+    function journal(){ const x=draft.answers[s.id]; const j=$("#journal"); if(!learn||!x||(x.o===-1&&!x.ask)){ j.innerHTML=""; return }
+      const good=s.options.find(o=>o.s==="g");
+      if(x.o===-1){ j.innerHTML=`<div class="journal n"><b>Бортовий журнал.</b> Добре, що чесно. Варто знати: ${esc(good.t.toLowerCase())}. ${esc(good.why)}.</div>`; return }
+      const o=s.options[x.o]; j.innerHTML=`<div class="journal ${o.s}"><b>${JOURNAL[o.s]}</b> ${esc(o.why)}.${o.s!=="g"?` Краще: ${esc(good.t.toLowerCase())}.`:""}</div>` }
+    bindChoices($("#ch"),v=>{ const o=+v; draft.answers[s.id]= o===-1 ? {o:-1,ask:(draft.answers[s.id]||{}).ask||null} : {o}; save(); showAsks(); ready(); journal() });
+    showAsks(); ready(); journal();
+    $("#back").onclick=()=>{ draft.i--; save(); step() };
+    next.onclick=async()=>{ if(draft.i<sits.length-1){ draft.i++; save(); step(); return }
+      next.disabled=true; try{ await API.submit(mt,draft.answers); const ss=session.get(); ss.done=ss.done||{}; ss.done[id]=true; delete ss.drafts[id]; session.set(ss); finish() }catch(e){ toast(e.message); next.disabled=false } } }
+  function finish(){ app.innerHTML=`<div class="wrap"><div style="margin-bottom:16px">${lights()}</div><h2>Політ завершено</h2><div class="stack"><p>Дякуємо! Ваші відповіді збережено.</p><p>Результати відкриються, коли гру пройде весь екіпаж або сплине час рейсу. Ніхто не бачить ваших відповідей до цього моменту.</p><div style="display:flex;gap:10px;flex-wrap:wrap"><button class="btn" data-go="results-${esc(id)}">Перевірити результати</button>${session.get().pilot?`<button class="btn ghost" data-go="flight-${esc(id)}">До рейсу</button>`:""}</div></div></div>` }
+  if(draft.i<0) intro(); else step();
+};
+
+/* ---------- scoring ---------- */
+function analyse(flight,members){
+  const sits=situationsFor(flight.profile); const prof=flight.profile;
+  const status=(s,a)=> !a ? null : a.o===-1 ? "u" : s.options[a.o]?.s;
+  const per=sits.map(s=>{ const st=members.map(m=>status(s,m.answers?.[s.id])).filter(Boolean); const sc=st.length?st.reduce((x,y)=>x+SCORE[y],0)/st.length:null;
+    const counts={}; st.forEach(x=>counts[x]=(counts[x]||0)+1); const agree= st.length>1 ? Math.max(...Object.values(counts))/st.length : null;
+    return {s,st,sc,agree,learning:isLearning(s,prof)} });
+  const sysScore={}; DATA.systems.forEach(sy=>{ const xs=per.filter(p=>p.s.sys===sy.id&&!p.learning&&p.sc!=null); sysScore[sy.id]= xs.length ? xs.reduce((a,b)=>a+b.sc,0)/xs.length : null });
+  const vals=Object.values(sysScore).filter(v=>v!=null); const coverage= vals.length ? vals.reduce((a,b)=>a+b,0)/vals.length : 0;
+  const ag=per.filter(p=>p.agree!=null&&!p.learning); const alignment= ag.length ? ag.reduce((a,b)=>a+b.agree,0)/ag.length : null;
+  const readiness = alignment==null ? coverage : coverage*(.8+.2*alignment);
+  const grantSet = per.filter(p=>p.s.layer==="grant"&&p.sc!=null); const grant = (prof!=="G"&&grantSet.length) ? grantSet.reduce((a,b)=>a+b.sc,0)/grantSet.length : null;
+  // competence map
+  const memberSys = members.map(m=>{ const o={}; DATA.systems.forEach(sy=>{ const xs=sits.filter(s=>s.sys===sy.id).map(s=>status(s,m.answers?.[s.id])).filter(Boolean); o[sy.id]= xs.length? xs.reduce((a,b)=>a+SCORE[b],0)/xs.length : null }); return o });
+  const sysCover={}; DATA.systems.forEach(sy=>{ sysCover[sy.id]=memberSys.filter(o=>o[sy.id]!=null&&o[sy.id]>=.75).length });
+  const rolesPresent=new Set(members.map(m=>m.role));
+  const missingRoles=[...new Set(DATA.systems.flatMap(sy=>sy.owners))].filter(r=>!rolesPresent.has(r));
+  // asks
+  const asks={}; members.forEach(m=>Object.values(m.answers||{}).forEach(a=>{ if(a.o===-1&&a.ask) asks[a.ask]=(asks[a.ask]||0)+1 }));
+  const disagreements = per.filter(p=>p.agree!=null&&p.agree<.67).sort((a,b)=>a.agree-b.agree);
+  const weak = per.filter(p=>p.sc!=null&&p.sc<.5).sort((a,b)=>a.sc-b.sc);
+  return {per,sysScore,coverage,alignment,readiness,grant,memberSys,sysCover,missingRoles,asks,disagreements,weak,status};
+}
+function fundingRoute(flight,R,members){
+  const prof=flight.profile, org=flight.orgtype||"ngo";
+  const pilot=members.find(m=>m.pilot)||members[0];
+  const c1=DATA.situations.find(s=>s.id==="C1"); const a1=pilot?.answers?.C1; const c1s= a1 ? (a1.o===-1?"u":c1.options[a1.o]?.s) : null;
+  const fuel=R.sysScore.fuel??0;
+  const external = {ngo:"гранти державних програм і фондів, спонсори, пожертви", biz:"пільгові кредити й мікрокредити, програми підтримки бізнесу, бізнес-ангели", init:"невеликі гранти фондів і муніципалітетів, краудфандинг; для більших сум знадобиться юридична особа"}[org];
+  let title,text;
+  if(prof==="A"){ title="Фокус — правильно реалізувати грант"; text=`Гроші вже є, тож головний ризик тепер — використання й звітність. ${R.grant!=null&&R.grant<.75?"Грантові ситуації показали прогалини: закрийте їх до першого траншу.":"Грантові правила екіпаж знає добре."}` }
+  else if(prof==="G"){ if(fuel>=.7&&(R.sysScore.route??0)>=.6){ title="Власний шлях працює"; text="Фінансова система проєкту виглядає стійко, тож можна рухатися без інвестицій. Зовнішні гроші знадобляться хіба для масштабування." }
+    else { title="На старт може знадобитися зовнішнє фінансування"; text=`Гра показала слабкі місця в «Паливі»: запас міцності, окупність або касові розриви. Варто подивитися на такі джерела: ${external}.` } }
+  else { if(c1s==="g"){ title="Спершу пілот власними силами, потім фінансування"; text=`Ви можете почати з малого кроку без зовнішніх грошей. Перевірте ідею, а потім залучайте ${prof==="B"?"грант":"фінансування"} на масштабування: з доведеним результатом шанси вищі. Можливі джерела: ${external}.` }
+    else { title= prof==="B" ? "Грант — ваш шлях, але після підготовки" : "Вам, найімовірніше, потрібне зовнішнє фінансування"; text=`Можливі джерела: ${external}.` } }
+  const todo = R.per.filter(p=>p.s.layer==="grant"&&p.sc!=null&&p.sc<.75).map(p=>p.s.title);
+  return {title,text,todo: prof==="G"?[]:todo};
+}
+
+routes.results = async (app,id) => {
+  const s=session.get(); const token = s.pilot?.token && (await API.listFlights(s.pilot.token)||[]).some(f=>f.id===id) ? s.pilot.token : s.members[id];
+  if(!token) throw new Error("Результати бачать лише учасники рейсу.");
+  const res=await API.results(id,token); const f=res.flight;
+  if(!res.unlocked){ const done=f.members.filter(m=>m.finished).length;
+    app.innerHTML=`<div class="wrap"><h2>Результати ще в дорозі</h2><div class="panel stack"><p>Завершили ${done} з ${f.crewSize}. Результати відкриються, коли гру пройдуть усі або сплине час рейсу.</p>${runway(done/Math.max(1,f.crewSize))}${s.pilot?`<button class="btn ghost" data-go="flight-${esc(id)}">До рейсу</button>`:""}</div></div>`; return }
+  const members=res.members; if(!members.length) throw new Error("Ще ніхто не завершив гру.");
+  const R=analyse(f,members); const route=fundingRoute(f,R,members);
+  const sysOrder=DATA.systems;
+  const verdict = R.readiness>=.75 ? "Можна готуватися до зльоту" : R.readiness>=.5 ? "Літак майже готовий, але є системи, які треба доналаштувати" : "До зльоту ще треба попрацювати на землі";
+  const roleName=r=>ROLE[r]?.name||r;
+  const askLabel=a=> a.startsWith("role:") ? (a==="role:pilot"?"пілота":"людини з роллю «"+roleName(a.slice(5))+"»") : ({giver:"грантодавця",expert:"зовнішнього експерта"}[a]);
+  const askLines = Object.entries(R.asks).sort((a,b)=>b[1]-a[1]).map(([a,n])=>{ const missing=a.startsWith("role:")&&!members.some(m=>m.role===a.slice(5)); return a==="none" ? `<li>${n} раз(и) учасники не знали, до кого звернутися</li>` : `<li>${n} раз(и) звернулися б до ${esc(askLabel(a))}${missing?` — <b>але цієї ролі в екіпажі немає</b>`:""}</li>` }).join("");
+  app.innerHTML = `<div class="wrap wide">
+   <p class="small muted">${s.pilot?`<button class="linkbtn" data-go="flight-${esc(id)}">До рейсу</button> · `:""}Рейс «${esc(f.project)}» · ${esc(PROF[f.profile]?.name)}</p>
+   <section class="reveal"><div class="bignum">${pct(R.readiness)}%</div><h2 style="margin-top:8px">Готовність до зльоту</h2><p class="muted" style="max-width:36em">${verdict}. Це орієнтир, а не прогноз успіху: він показує, наскільки екіпаж готовий до ситуацій, які чекають на проєкт.</p>
+   <div style="max-width:640px;margin-top:22px">${runway(R.readiness)}</div></section>
+   <div class="kpis">
+    <div class="kpi"><div class="v">${R.alignment==null?"—":pct(R.alignment)+"%"}</div><b>Узгодженість екіпажу</b><p class="small muted">${R.alignment==null?"Потрібно щонайменше двоє учасників.":"Наскільки однаково команда бачить ключові рішення."}</p></div>
+    ${R.grant!=null?`<div class="kpi"><div class="v">${pct(R.grant)}%</div><b>Готовність до гранту</b><p class="small muted">${f.profile==="A"?"Знання грантових правил.":"Окремий показник: не знижує загальної готовності."}</p></div>`:""}
+    <div class="kpi"><div class="v">${members.length}</div><b>Учасників пройшли гру</b><p class="small muted">${members.map(m=>esc(m.name)).join(", ")}</p></div>
+   </div>
+   <section class="section"><h2>Панель приладів</h2><div class="gauges">${sysOrder.map(sy=>gauge(sy.name,R.sysScore[sy.id])).join("")}</div></section>
+   <section class="section"><h2>Що підсвітив ліхтарик</h2>
+    ${R.missingRoles.length?`<div class="gap"><span class="bar" style="background:var(--coral)"></span><div><b>Ролі, яких немає в екіпажі:</b> ${R.missingRoles.map(r=>esc(roleName(r))).join(", ")}. Саме ці люди мають відповідати за частину систем.</div></div>`:""}
+    ${R.weak.slice(0,5).map(p=>`<div class="gap"><span class="bar" style="background:${colorVar(tone(p.sc))}"></span><div><b>${esc(p.s.title)}</b> <span class="muted small">· ${esc(SYS[p.s.sys].name)}</span><div class="small">Краще рішення: ${esc(p.s.options.find(o=>o.s==="g").t.toLowerCase())}. ${esc(p.s.options.find(o=>o.s==="g").why)}.</div></div></div>`).join("") || `<p class="muted">Критичних прогалин немає.</p>`}
+    ${askLines?`<h3 style="margin-top:24px">Чесні «не знаю»</h3><ul>${askLines}</ul>`:""}
+   </section>
+   ${R.disagreements.length?`<section class="section"><h2>Де екіпаж бачить по-різному</h2><p class="muted">Розбіжність у відповідях — це ризик: людей вистачає, а спільного розуміння немає.</p>
+    ${R.disagreements.slice(0,6).map(p=>`<div class="gap"><span class="bar" style="background:var(--amber)"></span><div><b>${esc(p.s.title)}</b><div class="small">${members.map(m=>{ const st=R.status(p.s,m.answers?.[p.s.id]); return st?`${esc(m.name)}: <span class="tag ${st==="u"?"n":st}">${STATUS[st]}</span>`:"" }).join(" ")}</div></div></div>`).join("")}</section>`:""}
+   <section class="section"><h2>Карта компетенцій</h2><p class="muted">Як кожен учасник впорався із ситуаціями кожної системи.</p>
+    <div class="tablewrap"><table class="map"><thead><tr><th>Система</th>${members.map(m=>`<th>${esc(m.name)}<div class="small muted">${esc(roleName(m.role))}</div></th>`).join("")}<th>Покриття</th></tr></thead><tbody>
+    ${sysOrder.map(sy=>`<tr><td>${esc(sy.name)}</td>${R.memberSys.map(o=>`<td><span class="cell" style="background:${colorVar(tone(o[sy.id]))}" title="${o[sy.id]==null?"—":pct(o[sy.id])+"%"}"></span></td>`).join("")}<td>${R.sysCover[sy.id]>=2?`<span class="tag g">Закрито</span>`:R.sysCover[sy.id]===1?`<span class="tag a">Одна людина</span>`:`<span class="tag c">Немає</span>`}</td></tr>`).join("")}
+    </tbody></table></div>
+    <div class="legend"><span><i style="background:var(--green)"></i>Готово</span><span><i style="background:var(--amber)"></i>Частково</span><span><i style="background:var(--coral)"></i>Бракує</span></div></section>
+   <section class="section"><h2>Маршрут фінансування</h2><div class="route"><h3>${esc(route.title)}</h3><p>${esc(route.text)}</p>${route.todo.length?`<p><b>Що вивчити перед подачею заявки:</b></p><ul>${route.todo.map(t=>`<li>${esc(t)}</li>`).join("")}</ul>`:""}</div></section>
+   <section class="section panel stack"><h2>Обговорити результати з експертом</h2><p>Покажемо, як закрити прогалини: навчання, ментор або людина в команду. Зв'яжемося електронною поштою.</p><button class="btn" id="exp">Хочу консультацію</button></section>
+   <footer>Результат — орієнтир для команди, а не юридична чи фінансова консультація. Правила конкретної програми й рішення про грант мають пріоритет.</footer>
+  </div>`;
+  $("#exp").onclick=async()=>{ try{ await API.expert(token,id,"results"); $("#exp").outerHTML=`<p><b>Готово.</b> Ми напишемо вам найближчим часом.</p>` }catch(e){ toast(e.message) } };
+};
+
+render();
+})();
+</script>
+</body>
+</html>
